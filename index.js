@@ -88,6 +88,7 @@ app.post('/org', async (req, res) => {
     res.status(400).send(err)
   })
 })
+
 app.post('/mod',async (req,res)=>{
   const mod= new moderator({
     username: req.body.username,
@@ -102,6 +103,7 @@ app.post('/mod',async (req,res)=>{
     res.status(404).send(err)
   })
 })
+
 app.get('/login',async (req,res)=>{
   await moderator.findOne({username:req.body.username,password:req.body.password},'organisation email').exec()
   .then((doc)=>{
