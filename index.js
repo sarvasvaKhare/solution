@@ -5,6 +5,15 @@ const app = express()
 // setting .env variables
 require('dotenv').config()
 
+// firebase admin
+var admin = require("firebase-admin");
+
+var serviceAccount = require("./socialgoal-e4d3d-firebase-adminsdk-ada12-3d018848f6.json");
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+  databaseURL: "https://socialgoal-e4d3d-default-rtdb.firebaseio.com"
+});
 // swagger docs
 const swaggerJsDocs = require('swagger-jsdoc')
 const swaggerUi = require('swagger-ui-express')
@@ -47,7 +56,20 @@ db.once('open', function () {
 
 // model schema
 const organisation=require('./models/organisation')
-const moderator=require('./models/moderators')
+const moderator=require('./models/moderators');
+const { request } = require('express');
+
+//authentication
+const authenticate = async (idToken)=>{
+  await admin.auth().verifyIdToken(idToken)
+  .then((token) => {
+    return token
+  })
+  .catch((err) => {
+    return err
+  });
+
+}
 
 //index routes
 /**
@@ -61,55 +83,90 @@ const moderator=require('./models/moderators')
  *      '404':
  *        description: A failed response with no memes :(
  */
-app.post('/org', async (req, res) => {                                  
-  const neworg= new organisation({
-    username: req.body.username,
-    organisation: req.body.organisation,
-    email: req.body.email,
-    password:req.body.password,
-    website: req.body.website,
-    number: req.body.number,
-    logo: req.body.logo,
-    tagline: req.body.tagline
-  })
-  const mod= new moderator({
-    username: req.body.username,
-    email: req.body.email,
-    password: req.body.password,
-    organisation: req.body.organisation,
-    access: req.body.access
-  })
-  await mod.save().catch((err)=>{
-    res.status(400).send(err)
-  })
-  await neworg.save().then((doc)=>{
-      res.status(200).send(doc)
+app.post('/org', async (req, res) => { 
+  await authenticate(req.header('Authorization')).then((token)=>{
+      const neworg= new organisation({
+        UID: token.uid,
+        username: req.body.username,
+        organisation: req.body.organisation,
+        email: token.email,
+        photo: token.picture,
+        website: req.body.website,
+        number: req.body.number,
+        logo: req.body.logo,
+        tagline: req.body.tagline
+      })
+      const mod= new moderator({
+        UID: token.uid,
+        username: req.body.username,
+        email: token.email,
+        organisation: req.body.organisation,
+        access: 'HEAD'
+      })
+       organisation.findOne(neworg).then((doc)=>{
+        if(!doc){
+          moderator.findOne(mod).then((doc)=>{
+            if(!doc){
+                mod.save().then(()=>{
+                  neworg.save().then((doc)=>{
+                    res.status(200).send(doc)
+                }).catch((err)=>{
+                  res.status(400).send(err)
+                })
+                }).catch((err)=>{
+                res.status(400).send(err)
+              })  
+            }else{
+              res.status(400).send('duplicate file in mod database')
+            }
+          }).then((err)=>{
+            console.log(err)
+            res.status(400).send(err)
+          })
+        }else{
+          res.status(400).send('duplicate file in org database')
+        }
+      }).then((err)=>{
+        console.log(err)
+        res.status(400).send(err)
+      })
   }).catch((err)=>{
-    res.status(400).send(err)
-  })
+    console.log(err)
+    res.status(400).send('you are an imposter')
+  })                                
 })
 
 app.post('/mod',async (req,res)=>{
-  const mod= new moderator({
-    username: req.body.username,
-    email: req.body.email,
-    password: req.body.password,
-    organisation: req.body.organisation,
-    access: req.body.access
-  })
-  await mod.save().then((doc)=>{
-    res.status(200).send(doc)
+  await authenticate(req.header('Authorization')).then((token)=>{
+    const mod= new moderator({
+      UID: token.uid,
+      username: req.body.username,
+      email: token.email,
+      organisation: req.body.organisation,
+      access: req.body.access
+    })
+    mod.save().then((doc)=>{
+      res.status(200).send(doc)
+    }).catch((err)=>{
+      res.status(404).send(err)
+    })
   }).catch((err)=>{
-    res.status(404).send(err)
+      console.log(err)
+      res.status(403).send('you are an imposter')
   })
 })
 
 app.get('/login',async (req,res)=>{
-  await moderator.findOne({username:req.body.username,password:req.body.password},'organisation email').exec()
-  .then((doc)=>{
-   res.status(200).send(doc)
+  await authenticate(req.header('Authorization')).then((token)=>{
+    moderator.findOne({UID:token.uid}).then((doc)=>{
+      res.status(200).send(doc)
+    }).catch((err)=>{
+      console.log(err)
+      res.status(400).send(err)
+    })
   }).catch((err)=>{
-    res.status(404).send(err)
+    console.log(err)
+    res.status(403).send('you are an imposter')
   })
 })
 
