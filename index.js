@@ -61,14 +61,15 @@ const { request } = require('express');
 
 //authentication
 const authenticate = async (idToken)=>{
+  var id=''
   await admin.auth().verifyIdToken(idToken)
   .then((token) => {
-    return token
+    id=token
   })
   .catch((err) => {
     return err
   });
-
+    return id
 }
 
 //index routes
@@ -84,9 +85,10 @@ const authenticate = async (idToken)=>{
  *        description: A failed response with no memes :(
  */
 app.post('/org', async (req, res) => { 
-  await authenticate(req.header('Authorization')).then((token)=>{
+  await admin.auth().verifyIdToken(req.header('Authorization')).then((token)=>{
+    console.log(token)
       const neworg= new organisation({
-        UID: token.uid,
+        UID: token.user_id,
         username: req.body.username,
         organisation: req.body.organisation,
         email: token.email,
@@ -97,7 +99,7 @@ app.post('/org', async (req, res) => {
         tagline: req.body.tagline
       })
       const mod= new moderator({
-        UID: token.uid,
+        UID: token.user_id,
         username: req.body.username,
         email: token.email,
         organisation: req.body.organisation,
@@ -119,14 +121,14 @@ app.post('/org', async (req, res) => {
             }else{
               res.status(400).send('duplicate file in mod database')
             }
-          }).then((err)=>{
+          }).catch((err)=>{
             console.log(err)
             res.status(400).send(err)
           })
         }else{
           res.status(400).send('duplicate file in org database')
         }
-      }).then((err)=>{
+      }).catch((err)=>{
         console.log(err)
         res.status(400).send(err)
       })
@@ -137,9 +139,9 @@ app.post('/org', async (req, res) => {
 })
 
 app.post('/mod',async (req,res)=>{
-  await authenticate(req.header('Authorization')).then((token)=>{
+  await admin.auth().verifyIdToken(req.header('Authorization')).then((token)=>{
     const mod= new moderator({
-      UID: token.uid,
+      UID: token.user_id,
       username: req.body.username,
       email: token.email,
       organisation: req.body.organisation,
@@ -157,8 +159,8 @@ app.post('/mod',async (req,res)=>{
 })
 
 app.get('/login',async (req,res)=>{
-  await authenticate(req.header('Authorization')).then((token)=>{
-    moderator.findOne({UID:token.uid}).then((doc)=>{
+  await admin.auth().verifyIdToken(req.header('Authorization')).then((token)=>{
+    moderator.findOne({UID:token.user_id}).then((doc)=>{
       res.status(200).send(doc)
     }).catch((err)=>{
       console.log(err)
