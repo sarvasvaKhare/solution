@@ -94,7 +94,7 @@ app.post('/org', async (req, res) => {
       const mod= new moderator({
         UID: user.uid,
         email: user.email,
-        orgName: req.body.orgName,
+        orgId: num,
         access: 'HEAD'
       })
        organisation.findOne(neworg).then((doc)=>{
@@ -153,7 +153,7 @@ app.post('/mod',async (req,res)=>{
   await admin.auth().createUser({
     email: req.body.email,
     emailverified: false,
-    password: req.body.passworde
+    password: req.body.password
   }).then((user)=>{
     const mod= new moderator({
       UID: user.uid,
