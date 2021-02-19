@@ -58,19 +58,7 @@ db.once('open', function () {
 const organisation=require('./models/organisation')
 const moderator=require('./models/moderators');
 const { request } = require('express');
-
-//authentication
-const authenticate = async (idToken)=>{
-  var id=''
-  await admin.auth().verifyIdToken(idToken)
-  .then((token) => {
-    id=token
-  })
-  .catch((err) => {
-    return err
-  });
-    return id
-}
+const User = require('./models/User');
 
 //index routes
 /**
@@ -85,24 +73,28 @@ const authenticate = async (idToken)=>{
  *        description: A failed response with no memes :(
  */
 app.post('/org', async (req, res) => { 
-  await admin.auth().verifyIdToken(req.header('Authorization')).then((token)=>{
-    console.log(token)
+  await admin.auth().createUser({
+    email: req.body.email,
+    emailverified: false,
+    password: req.body.password
+  }).then((user)=>{
+    console.log(user)
+      organisation.estimatedDocumentCount().then((num)=>{
       const neworg= new organisation({
-        UID: token.user_id,
-        username: req.body.username,
-        organisation: req.body.organisation,
-        email: token.email,
-        photo: token.picture,
+        UID: user.uid,
+        orgName: req.body.orgName,
+        orgDisplayName: req.body.orgDisplayName,
+        orgId: num,
+        email: user.email,
         website: req.body.website,
         number: req.body.number,
         logo: req.body.logo,
         tagline: req.body.tagline
       })
       const mod= new moderator({
-        UID: token.user_id,
-        username: req.body.username,
-        email: token.email,
-        organisation: req.body.organisation,
+        UID: user.uid,
+        email: user.email,
+        orgName: req.body.orgName,
         access: 'HEAD'
       })
        organisation.findOne(neworg).then((doc)=>{
@@ -113,39 +105,61 @@ app.post('/org', async (req, res) => {
                   neworg.save().then((doc)=>{
                     res.status(200).send(doc)
                 }).catch((err)=>{
-                  res.status(400).send(err)
+                  admin.auth().deleteUser(user.uid).then(() => {console.log('Successfully deleted user')
+                  res.status(400).send(err)}).catch((error) => {console.log('Error deleting user:', error);});
+                  
                 })
                 }).catch((err)=>{
-                res.status(400).send(err)
+                admin.auth().deleteUser(user.uid).then(() => {console.log('Successfully deleted user')
+                res.status(400).send(err)})
+                .catch((error) => {console.log('Error deleting user:', error);});
+          
               })  
             }else{
-              res.status(400).send('duplicate file in mod database')
+              admin.auth().deleteUser(user.uid).then(() => {
+                console.log('Successfully deleted user')
+                res.status(400).send('duplicate file in mod database')
+            }).catch((error) => {console.log('Error deleting user:', error);});
             }
           }).catch((err)=>{
             console.log(err)
-            res.status(400).send(err)
+            admin.auth().deleteUser(user.uid).then(() => {console.log('Successfully deleted user')
+            res.status(400).send(err)})
+            .catch((error) => {console.log('Error deleting user:', error);});
           })
         }else{
-          res.status(400).send('duplicate file in org database')
+          admin.auth().deleteUser(user.uid).then(() => {
+          console.log('Successfully deleted user')
+          res.status(400).send('duplicate file in org database')}).
+          catch((error) => {console.log('Error deleting user:', error);});
         }
       }).catch((err)=>{
         console.log(err)
-        res.status(400).send(err)
+        admin.auth().deleteUser(user.uid).then(() => {console.log('Successfully deleted user')
+        res.status(400).send(err)})
+        .catch((error) => {console.log('Error deleting user:', error);});
       })
   }).catch((err)=>{
     console.log(err)
-    res.status(400).send('you are an imposter')
-  })                                
+    res.status(400).send('cant get lastid')
+  })
+}).catch((err)=>{
+  console.log(err)
+  res.status(400).send('you are an imposter')
 })
+})                          
 
 app.post('/mod',async (req,res)=>{
-  await admin.auth().verifyIdToken(req.header('Authorization')).then((token)=>{
+  await admin.auth().createUser({
+    email: req.body.email,
+    emailverified: false,
+    password: req.body.passworde
+  }).then((user)=>{
     const mod= new moderator({
-      UID: token.user_id,
-      username: req.body.username,
-      email: token.email,
-      organisation: req.body.organisation,
-      access: req.body.access
+      UID: user.uid,
+      email: user.email,
+      orgId: req.body.orgID,
+      access: req.body.access||'HEAD'
     })
     mod.save().then((doc)=>{
       res.status(200).send(doc)
@@ -154,24 +168,75 @@ app.post('/mod',async (req,res)=>{
     })
   }).catch((err)=>{
       console.log(err)
-      res.status(403).send('you are an imposter')
+      res.status(403).send('error adding to firebase')
   })
 })
-
-app.get('/login',async (req,res)=>{
+app.post('/add',async(req,res)=>{
   await admin.auth().verifyIdToken(req.header('Authorization')).then((token)=>{
-    moderator.findOne({UID:token.user_id}).then((doc)=>{
-      res.status(200).send(doc)
+      const newUser= new User({
+        username:req.body.username,
+        UID:token.uid,
+        email:token.email,
+        displayName:token.name,
+        photo:token.picture,
+        Level:req.body.level||'1'
+      })
+      newUser.save().then((doc)=>{
+          res.status(200).send(doc)
+      }).catch((err)=>{
+        res.status(400).send(err)
+      })
+  }).catch((err)=>{
+    res.status(400).send(err)
+  })
+})
+app.get('/login',async (req,res)=>{
+  if(req.body.org==true){
+    await admin.auth().verifyIdToken(req.header('Authorization')).then((token)=>{
+      moderator.findOne({UID:token.user_id}).then((doc)=>{
+        res.status(200).send(doc)
+      }).catch((err)=>{
+        console.log(err)
+        res.status(400).send(err)
+      })
     }).catch((err)=>{
       console.log(err)
-      res.status(400).send(err)
+      res.status(403).send('you are an imposter')
     })
+  }else{
+  await admin.auth().verifyIdToken(req.header('Authorization')).then((token)=>{
+      User.findOne({UID:token.uid}).then((doc)=>{
+        res.status(200).send(doc)
+      }).catch((err)=>{
+        res.status(400).send(err)
+      })
   }).catch((err)=>{
     console.log(err)
     res.status(403).send('you are an imposter')
   })
+}
 })
 
+app.post('/user', async(req,res)=>{
+  User.findOne({username:req.body.username}).then((doc)=>{
+    if(doc){
+      res.status(400).send('username taken')
+    }else{
+      res.status(200).send('okay')
+    }
+  }).catch((err)=>{
+    res.status(400).send(err)
+  })
+})
+app.post('/orgname',async (req,res)=>{
+  organisation.findOne({orgName:req.body.orgName}).then((doc)=>{
+    if(doc){
+      res.status(400).send('username taken')
+    }else{
+      res.status(200).send('okay')
+    }
+  })
+})
 //server up check
 app.listen(port, () => {
   console.log('Server is up on port ' + port)

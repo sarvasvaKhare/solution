@@ -1,12 +1,13 @@
 const mongoose = require('mongoose');
 const organisation = mongoose.model('organisation',
 {   UID: {type:String,unique:true,required: true},
-    username: {type:String,unique:true,required: true},
+    orgName: {type:String,unique:true,required: true},
+    orgId:{type:Number,unique:true,require:true},
     photo: String,
-    organisation: {type:String,required: true},
-    email:{type:String,unique:true,},
-    website:{type:String,required: true},
-    number:{type:String,required: true},
+    organDisplayName: {type:String},
+    email:{type:String,unique:true},
+    website:{type:String},
+    number:{type:String},
     logo:String,
     tagline:String
 })
