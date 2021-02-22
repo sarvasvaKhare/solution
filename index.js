@@ -84,7 +84,7 @@ app.post('/org', async (req, res) => {
         UID: user.uid,
         orgName: req.body.orgName,
         orgDisplayName: req.body.orgDisplayName,
-        orgId: num,
+        orgId: num||0,
         email: user.email,
         website: req.body.website,
         number: req.body.number,
@@ -94,7 +94,7 @@ app.post('/org', async (req, res) => {
       const mod= new moderator({
         UID: user.uid,
         email: user.email,
-        orgId: num,
+        orgId: num||0,
         access: 'HEAD'
       })
        organisation.findOne(neworg).then((doc)=>{
