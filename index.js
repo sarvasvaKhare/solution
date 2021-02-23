@@ -40,6 +40,7 @@ app.use(cors())
 //setting up body parser to parse req into body
 var bodyParser = require('body-parser')
 app.use(bodyParser.json());
+var jwt = require('jsonwebtoken');
 
 //port as enviroment variable
 const port = process.env.PORT || 8080
@@ -83,7 +84,7 @@ app.post('/org', async (req, res) => {
       const neworg= new organisation({
         UID: user.uid,
         orgName: req.body.orgName,
-        orgDisplayName: req.body.orgDisplayName,
+        displayName: req.body.displayName,
         orgId: num||0,
         email: user.email,
         website: req.body.website,
@@ -103,49 +104,49 @@ app.post('/org', async (req, res) => {
             if(!doc){
                 mod.save().then(()=>{
                   neworg.save().then((doc)=>{
-                    res.status(200).send(doc)
+                    const token = jwt.sign({doc}, 'sarvasva')
+                    res.status(200).send({"jwt":token,"profile":doc})
                 }).catch((err)=>{
-                  admin.auth().deleteUser(user.uid).then(() => {console.log('Successfully deleted user')
-                  res.status(400).send(err)}).catch((error) => {console.log('Error deleting user:', error);});
-                  
+                  admin.auth().deleteUser(user.uid).then(() => {console.log({"msg":"Successfully deleted user"})
+                  res.status(400).send(err)}).catch((error) => {console.log(error);});
                 })
                 }).catch((err)=>{
-                admin.auth().deleteUser(user.uid).then(() => {console.log('Successfully deleted user')
+                admin.auth().deleteUser(user.uid).then(() => {console.log({"msg":"Successfully deleted user"})
                 res.status(400).send(err)})
-                .catch((error) => {console.log('Error deleting user:', error);});
+                .catch((error) => {console.log(error);});
           
               })  
             }else{
               admin.auth().deleteUser(user.uid).then(() => {
-                console.log('Successfully deleted user')
-                res.status(400).send('duplicate file in mod database')
-            }).catch((error) => {console.log('Error deleting user:', error);});
+                console.log({"msg":"Successfully deleted user"})
+                res.status(400).send({"msg":"duplicate file in mod database"})
+            }).catch((error) => {console.log(error);});
             }
           }).catch((err)=>{
             console.log(err)
-            admin.auth().deleteUser(user.uid).then(() => {console.log('Successfully deleted user')
+            admin.auth().deleteUser(user.uid).then(() => {console.log({"msg":"Successfully deleted user"})
             res.status(400).send(err)})
-            .catch((error) => {console.log('Error deleting user:', error);});
+            .catch((error) => {console.log(error);});
           })
         }else{
           admin.auth().deleteUser(user.uid).then(() => {
-          console.log('Successfully deleted user')
-          res.status(400).send('duplicate file in org database')}).
-          catch((error) => {console.log('Error deleting user:', error);});
+          console.log({"msg":"Successfully deleted user"})
+          res.status(400).send({"msg":"duplicate file in org database"})}).
+          catch((error) => {console.log(error);});
         }
       }).catch((err)=>{
         console.log(err)
         admin.auth().deleteUser(user.uid).then(() => {console.log('Successfully deleted user')
         res.status(400).send(err)})
-        .catch((error) => {console.log('Error deleting user:', error);});
+        .catch((error) => {console.log(error);});
       })
   }).catch((err)=>{
     console.log(err)
-    res.status(400).send('cant get lastid')
+    res.status(400).send({"msg":"cant get lastid"})
   })
 }).catch((err)=>{
   console.log(err)
-  res.status(400).send('you are an imposter')
+  res.status(400).send({"msg":"you are an imposter"})
 })
 })                          
 
@@ -158,23 +159,28 @@ app.post('/mod',async (req,res)=>{
     const mod= new moderator({
       UID: user.uid,
       email: user.email,
-      orgId: req.body.orgID,
+      orgId: req.body.orgId,
       access: req.body.access||'HEAD'
     })
     mod.save().then((doc)=>{
-      res.status(200).send(doc)
+      var token = jwt.sign({doc}, 'sarvasva')
+      res.status(200).send({"jwt":token,"profile":doc})
     }).catch((err)=>{
-      res.status(404).send(err)
+      admin.auth().deleteUser(user.uid).then(()=>{
+        res.status(404).send(err)
+      })
     })
   }).catch((err)=>{
+    admin.auth().deleteUser(user.uid).then(()=>{
       console.log(err)
-      res.status(403).send('error adding to firebase')
+      res.status(403).send({"msg":"error adding to firebase"})
+    })
   })
 })
+
 app.post('/add',async(req,res)=>{
   await admin.auth().verifyIdToken(req.header('Authorization')).then((token)=>{
       const newUser= new User({
-        username:req.body.username,
         UID:token.uid,
         email:token.email,
         displayName:token.name,
@@ -182,7 +188,8 @@ app.post('/add',async(req,res)=>{
         Level:req.body.level||'1'
       })
       newUser.save().then((doc)=>{
-          res.status(200).send(doc)
+        var token = jwt.sign(doc, 'sarvasva')
+        res.status(200).send({"jwt":token,"profile":doc})
       }).catch((err)=>{
         res.status(400).send(err)
       })
@@ -190,53 +197,33 @@ app.post('/add',async(req,res)=>{
     res.status(400).send(err)
   })
 })
+
 app.get('/login',async (req,res)=>{
-  if(req.body.org==true){
-    await admin.auth().verifyIdToken(req.header('Authorization')).then((token)=>{
-      moderator.findOne({UID:token.user_id}).then((doc)=>{
+    try{
+      const token = await jwt.verify(req.header('Authorization'),'sarvasva')
+      console.log(token)
+      moderator.findOne({UID:token.doc.UID}).then((doc)=>{
         res.status(200).send(doc)
       }).catch((err)=>{
         console.log(err)
         res.status(400).send(err)
       })
-    }).catch((err)=>{
+    } catch(err){
       console.log(err)
       res.status(403).send('you are an imposter')
-    })
-  }else{
-  await admin.auth().verifyIdToken(req.header('Authorization')).then((token)=>{
-      User.findOne({UID:token.uid}).then((doc)=>{
-        res.status(200).send(doc)
-      }).catch((err)=>{
-        res.status(400).send(err)
-      })
-  }).catch((err)=>{
-    console.log(err)
-    res.status(403).send('you are an imposter')
-  })
-}
+    }
 })
 
-app.post('/user', async(req,res)=>{
-  User.findOne({username:req.body.username}).then((doc)=>{
-    if(doc){
-      res.status(400).send('username taken')
-    }else{
-      res.status(200).send('okay')
-    }
-  }).catch((err)=>{
-    res.status(400).send(err)
-  })
-})
 app.post('/orgname',async (req,res)=>{
   organisation.findOne({orgName:req.body.orgName}).then((doc)=>{
     if(doc){
-      res.status(400).send('username taken')
+      res.status(400).send('orgName taken')
     }else{
       res.status(200).send('okay')
     }
   })
 })
+
 //server up check
 app.listen(port, () => {
   console.log('Server is up on port ' + port)
