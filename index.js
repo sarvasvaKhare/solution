@@ -179,8 +179,8 @@ app.post('/mod',async (req,res)=>{
 })
 
 app.post('/add',async(req,res)=>{
-  await admin.auth().verifyIdToken(req.header('Authorization')).then((token)=>{
-    User.findOne({UID:token.uid}).then((doc)=>{
+  await admin.auth().verifyIdToken(req.header('Authorization')).then(async (token)=>{
+       const doc= await User.findOne({UID:token.uid})
       if(!doc){
       const newUser= new User({
         UID:token.uid,
@@ -197,14 +197,11 @@ app.post('/add',async(req,res)=>{
       })
     }else{
       var token = jwt.sign({doc}, 'sarvasva')
-        res.status(200).send({"jwt":token,"profile":doc})
+      res.status(200).send({"jwt":token,"profile":doc})
     }
     }).catch((err)=>{
       res.status(400).send(err)
     })
-  }).catch((err)=>{
-    res.status(400).send(err)
-  })
 })
 
 app.get('/login',async (req,res)=>{
