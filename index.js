@@ -41,6 +41,7 @@ app.use(cors())
 var bodyParser = require('body-parser')
 app.use(bodyParser.json());
 var jwt = require('jsonwebtoken');
+var generator = require('generate-password');
 
 //port as enviroment variable
 const port = process.env.PORT || 8080
@@ -151,15 +152,20 @@ app.post('/org', async (req, res) => {
 })                          
 
 app.post('/mod',async (req,res)=>{
+  const token =jwt.verify(req.header('Authorization'),'sarvasva')
+  var password =  generator.generate({
+    length: 8,
+    numbers: true
+  })
   await admin.auth().createUser({
     email: req.body.email,
     emailverified: false,
-    password: req.body.password
+    password: password
   }).then((user)=>{
     const mod= new moderator({
       UID: user.uid,
       email: user.email,
-      orgId: req.body.orgId,
+      orgId: token.doc.orgId,
       access: req.body.access||'HEAD'
     })
     mod.save().then((doc)=>{
@@ -171,10 +177,7 @@ app.post('/mod',async (req,res)=>{
       })
     })
   }).catch((err)=>{
-    admin.auth().deleteUser(user.uid).then(()=>{
-      console.log(err)
       res.status(403).send({"msg":"error adding to firebase"})
-    })
   })
 })
 
@@ -206,7 +209,7 @@ app.post('/add',async(req,res)=>{
 
 app.get('/login',async (req,res)=>{
     try{
-      const token = await jwt.verify(req.header('Authorization'),'sarvasva')
+      const token = jwt.verify(req.header('Authorization'),'sarvasva')
       console.log(token)
       moderator.findOne({UID:token.doc.UID}).then((doc)=>{
         res.status(200).send(doc)
