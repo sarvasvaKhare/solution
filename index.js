@@ -188,7 +188,7 @@ app.post('/add',async(req,res)=>{
         Level:req.body.level||'1'
       })
       newUser.save().then((doc)=>{
-        var token = jwt.sign(doc, 'sarvasva')
+        var token = jwt.sign({doc}, 'sarvasva')
         res.status(200).send({"jwt":token,"profile":doc})
       }).catch((err)=>{
         res.status(400).send(err)
