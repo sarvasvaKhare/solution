@@ -180,6 +180,8 @@ app.post('/mod',async (req,res)=>{
 
 app.post('/add',async(req,res)=>{
   await admin.auth().verifyIdToken(req.header('Authorization')).then((token)=>{
+    User.findOne({UID:token.uid}).then((doc)=>{
+      if(!doc){
       const newUser= new User({
         UID:token.uid,
         email:token.email,
@@ -193,6 +195,13 @@ app.post('/add',async(req,res)=>{
       }).catch((err)=>{
         res.status(400).send(err)
       })
+    }else{
+      var token = jwt.sign({doc}, 'sarvasva')
+        res.status(200).send({"jwt":token,"profile":doc})
+    }
+    }).catch((err)=>{
+      res.status(400).send(err)
+    })
   }).catch((err)=>{
     res.status(400).send(err)
   })
