@@ -90,7 +90,7 @@ app.post('/org', async (req, res) => {
         email: user.email,
         website: req.body.website,
         number: req.body.number,
-        logo: req.body.logo,
+        photo: req.body.photo,
         tagline: req.body.tagline
       })
       const mod= new moderator({
@@ -103,10 +103,10 @@ app.post('/org', async (req, res) => {
         if(!doc){
           moderator.findOne(mod).then((doc)=>{
             if(!doc){
-                mod.save().then(()=>{
+                mod.save().then((file)=>{
                   neworg.save().then((doc)=>{
-                    const token = jwt.sign({doc}, 'sarvasva')
-                    res.status(200).send({"jwt":token,"profile":doc})
+                    const token = jwt.sign({"modprofile":doc,"orgprofile":file}, 'sarvasva')
+                    res.status(200).send({"jwt":token,"modprofile":doc,"orgprofile":file})
                 }).catch((err)=>{
                   admin.auth().deleteUser(user.uid).then(() => {console.log({"msg":"Successfully deleted user"})
                   res.status(400).send(err)}).catch((error) => {console.log(error);});
@@ -115,7 +115,6 @@ app.post('/org', async (req, res) => {
                 admin.auth().deleteUser(user.uid).then(() => {console.log({"msg":"Successfully deleted user"})
                 res.status(400).send(err)})
                 .catch((error) => {console.log(error);});
-          
               })  
             }else{
               admin.auth().deleteUser(user.uid).then(() => {
@@ -153,6 +152,7 @@ app.post('/org', async (req, res) => {
 
 app.post('/mod',async (req,res)=>{
   const token =jwt.verify(req.header('Authorization'),'sarvasva')
+  console.log(token)
   var password =  generator.generate({
     length: 8,
     numbers: true
@@ -165,19 +165,22 @@ app.post('/mod',async (req,res)=>{
     const mod= new moderator({
       UID: user.uid,
       email: user.email,
-      orgId: token.doc.orgId,
+      orgId: token.orgprofile.orgId,
       access: req.body.access||'HEAD'
     })
-    mod.save().then((doc)=>{
-      var token = jwt.sign({doc}, 'sarvasva')
-      res.status(200).send({"jwt":token,"profile":doc})
+    mod.save().then(async (doc)=>{
+      const file = await organisation.findOne({orgId:doc.orgId})
+        const token = jwt.sign({"modprofile":doc,"orgprofile":file}, 'sarvasva')
+        res.status(200).send({"jwt":token,"modprofile":doc,"orgprofile":file})
     }).catch((err)=>{
       admin.auth().deleteUser(user.uid).then(()=>{
         res.status(404).send(err)
       })
     })
   }).catch((err)=>{
-      res.status(403).send({"msg":"error adding to firebase"})
+      admin.auth().deleteUser(user.uid).then(()=>{
+        res.status(400).send(err)
+      })
   })
 })
 
@@ -209,10 +212,12 @@ app.post('/add',async(req,res)=>{
 
 app.get('/login',async (req,res)=>{
     try{
-      const token = jwt.verify(req.header('Authorization'),'sarvasva')
+      const token = await admin.auth().verifyIdToken(req.header('Authorization'))
       console.log(token)
-      moderator.findOne({UID:token.doc.UID}).then((doc)=>{
-        res.status(200).send(doc)
+      moderator.findOne({UID:token.uid}).then(async (doc)=>{
+        const file = await organisation.findOne({orgId:token.orgId})
+        const token = jwt.sign({"modprofile":doc,"orgprofile":file}, 'sarvasva')
+        res.status(200).send({"jwt":token,"modprofile":doc,"orgprofile":file})
       }).catch((err)=>{
         console.log(err)
         res.status(400).send(err)
