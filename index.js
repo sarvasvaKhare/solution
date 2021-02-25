@@ -61,6 +61,7 @@ const organisation=require('./models/organisation')
 const moderator=require('./models/moderators');
 const { request } = require('express');
 const User = require('./models/User');
+const OrgFeed = require('./models/OrgFeed');
 
 //index routes
 /**
@@ -214,14 +215,10 @@ app.get('/login',async (req,res)=>{
     try{
       const token = await admin.auth().verifyIdToken(req.header('Authorization'))
       console.log(token)
-      moderator.findOne({UID:token.uid}).then(async (doc)=>{
-        const file = await organisation.findOne({orgId:token.orgId})
-        const token = jwt.sign({"modprofile":doc,"orgprofile":file}, 'sarvasva')
-        res.status(200).send({"jwt":token,"modprofile":doc,"orgprofile":file})
-      }).catch((err)=>{
-        console.log(err)
-        res.status(400).send(err)
-      })
+      const doc = await moderator.findOne({UID:token.uid})
+        const file = await organisation.findOne({orgId:doc.orgId})
+        const ticket = jwt.sign({"modprofile":doc,"orgprofile":file}, 'sarvasva')
+        res.status(200).send({"jwt":ticket,"modprofile":doc,"orgprofile":file})
     } catch(err){
       console.log(err)
       res.status(403).send('you are an imposter')
@@ -238,6 +235,34 @@ app.post('/orgname',async (req,res)=>{
   })
 })
 
+app.get('/orgfeed', async (req,res)=>{
+  const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
+  const posts= await OrgFeed.find({orgId:ticket.orgprofile.orgId}).sort({created_at:-1})
+  res.status(200).send(posts)  
+})
+app.post('/orgfeed', async (req,res)=>{
+  const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
+  console.log(ticket)
+  console.log(ticket.orgprofile.orgId)
+  const post = new OrgFeed({
+    Type: req.body.Type,
+    photoUrl: req.body.photoUrl,
+    targetAmount: req.body.targetAmount,
+    reachedAmount: req.body.reachedAmount,
+    Title: req.body.Title,
+    Caption: req.body.Caption,
+    detailedInfo: req.body.detailedInfo,
+    blogLink: req.body.blogLink,
+    Shoutout: req.body.Shoutout,
+    orgId: ticket.orgprofile.orgId
+  })
+  console.log(post)
+  post.save().then((doc)=>{
+    res.status(200).send(doc)
+  }).catch((err)=>{
+    res.status(400).send(err)
+  })
+})
 //server up check
 app.listen(port, () => {
   console.log('Server is up on port ' + port)
