@@ -281,9 +281,10 @@ app.post('/updatepro',async (req,res)=>{
   
 })
 
-app.post('/like', (req,res)=>{
+app.post('/like', async (req,res)=>{
   const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
-   const post = OrgFeed.findById(req.body.id)
+   const post = await OrgFeed.findById(req.body.id)
+   console.log(post)
    post.likes.push({
      userId: ticket.modprofile.UID,
      amount :req.body.amount||0
