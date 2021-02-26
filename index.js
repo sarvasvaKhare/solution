@@ -354,7 +354,7 @@ app.delete('/like', async(req,res)=>{
     var update = {
       $pull: { likes: { userId:ticket.modprofile.UID, amount: req.body.amount } }
   }
-  OrgFeed.findOneAndUpdate(conditions,update,{new: true}).then((doc)=>{
+  OrgFeed.findOneAndUpdate(conditions,update).then((doc)=>{
     if(doc==null){
       res.status(200).send({"msg":"already not liked"})
     }else{
@@ -377,7 +377,7 @@ app.delete('/follow', async (req,res)=>{
         $pull: { following: { orgId: req.body.orgId, orgName: req.body.orgName } }
     }
     
-    User.findOneAndUpdate(conditions,update,{new: true}).then((doc)=>{
+    User.findOneAndUpdate(conditions,update).then((doc)=>{
       if(doc==null){
         res.status(200).send({"msg":"already followed"})
       }else{
@@ -395,7 +395,7 @@ app.delete('/follow', async (req,res)=>{
     var update = {
         $pull: { following: { orgId: req.body.orgId, orgName: req.body.orgName } }
     }
-    organisation.findOneAndUpdate(conditions,update,{new: true}).then((doc)=>{
+    organisation.findOneAndUpdate(conditions,update).then((doc)=>{
       if(doc==null){
         res.status(200).send({"msg":"already followed"})
       }else{
