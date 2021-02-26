@@ -304,9 +304,9 @@ app.post('/like', async (req,res)=>{
 
 app.post('/follow', async (req,res)=>{
   const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
-  if(ticket.orgprofile==undefined){
+  if(ticket.orgprofile){
     var conditions = {
-      UID:ticket.doc.UID,
+      "UID":ticket.doc.UID,
       "following.orgId": {
         $ne: req.body.orgId
       }}
@@ -325,7 +325,7 @@ app.post('/follow', async (req,res)=>{
     })
   }else{
     var conditions = {
-      orgId:ticket.orgprofile.orgId,
+      "orgId":ticket.orgprofile.orgId,
       "following.orgId": {
         $ne: req.body.orgId
       }}
