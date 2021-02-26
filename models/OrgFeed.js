@@ -13,7 +13,8 @@ const orgSchema = new mongoose.Schema({
         profileUID:{type:String}
     }
     ],
-    orgId:{type:Number,index:true}
+    orgId:{type:Number,index:true},
+    likes:[String]
 },{timestamps:true})
 const OrgFeed = mongoose.model('OrgFeed',orgSchema,'OrgFeed')
 module.exports = OrgFeed

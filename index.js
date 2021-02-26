@@ -240,6 +240,7 @@ app.get('/orgfeed', async (req,res)=>{
   const posts= await OrgFeed.find({orgId:ticket.orgprofile.orgId}).sort({created_at:-1})
   res.status(200).send(posts)  
 })
+
 app.post('/orgfeed', async (req,res)=>{
   const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
   console.log(ticket)
@@ -254,7 +255,8 @@ app.post('/orgfeed', async (req,res)=>{
     detailedInfo: req.body.detailedInfo,
     blogLink: req.body.blogLink,
     Shoutout: req.body.Shoutout,
-    orgId: ticket.orgprofile.orgId
+    orgId: ticket.orgprofile.orgId,
+    likes: req.body.likes
   })
   console.log(post)
   post.save().then((doc)=>{
@@ -263,6 +265,36 @@ app.post('/orgfeed', async (req,res)=>{
     res.status(400).send(err)
   })
 })
+
+app.post('/updatepro',async (req,res)=>{
+  const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
+  const ID=ticket.orgprofile.orgId
+  if(ID){
+    const file = await organisation.updateOne({orgId:ID},{
+      orgName: req.body.orgName,
+      displayName: req.body.displayName,
+      website:req.body.website,
+      number: req.body.number,
+      photo:req.body.photo,
+      tagline:req.body.tagline
+    })
+    res.status(200).send(file)
+  }
+  
+})
+
+app.post('/like', (req,res)=>{
+  const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
+   const post = OrgFeed.findById(req.body.id)
+   post.likes.push(ticket.modprofile.UID)
+   post.save().then((doc)=>{
+    res.status(200).send(doc)
+   }).catch((err)=>{
+    res.status(400).send(err)
+   })
+})
+
+
 //server up check
 app.listen(port, () => {
   console.log('Server is up on port ' + port)
