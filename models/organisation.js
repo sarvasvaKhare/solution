@@ -8,6 +8,10 @@ const organisation = mongoose.model('organisation',
     website:{type:String},
     number:{type:String},
     photo:String,
-    tagline:String
+    tagline:String,
+    following:[{
+        orgId:String,
+        orgName:String
+    }]
 })
 module.exports = organisation

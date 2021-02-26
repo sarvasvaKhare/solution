@@ -14,7 +14,10 @@ const orgSchema = new mongoose.Schema({
     }
     ],
     orgId:{type:Number,index:true},
-    likes:[String]
+    likes:[{
+        userId:{type:String},
+        amount:{type:Number}
+    }]
 },{timestamps:true})
 const OrgFeed = mongoose.model('OrgFeed',orgSchema,'OrgFeed')
 module.exports = OrgFeed

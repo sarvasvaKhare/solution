@@ -294,8 +294,22 @@ app.post('/like', (req,res)=>{
 
 app.post('/follow', async (req,res)=>{
   const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
-  if(ticket.orgprofile){
-    const user =organisation.findOne()
+  if(ticket.orgprofile==undefined){
+    const user =organisation.findOne({orgId:ticket.orgprofile.orgId})
+    user.following.push(req.body.orgId)
+    user.save().then(()=>{
+      res.status(200).send(doc)
+    }).catch((err)=>{
+     res.status(400).send(err)
+    })
+  }else{
+    const user = User.findOne({UID:ticket.doc.UID})
+    user.following.push(req.body.orgId)
+    user.save().then(()=>{
+      res.status(200).send(doc)
+    }).catch((err)=>{
+     res.status(400).send(err)
+    })
   }
 })
 //server up check
