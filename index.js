@@ -284,7 +284,10 @@ app.post('/updatepro',async (req,res)=>{
 app.post('/like', (req,res)=>{
   const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
    const post = OrgFeed.findById(req.body.id)
-   post.likes.push(ticket.modprofile.UID)
+   post.likes.push({
+     userId: ticket.modprofile.UID,
+     amount :req.body.amount||0
+    })
    post.save().then((doc)=>{
     res.status(200).send(doc)
    }).catch((err)=>{
@@ -304,7 +307,7 @@ app.post('/follow', async (req,res)=>{
     })
   }else{
     const user = User.findOne({UID:ticket.doc.UID})
-    user.following.push(req.body.orgId)
+    user.following.push(req.body.data)
     user.save().then(()=>{
       res.status(200).send(doc)
     }).catch((err)=>{

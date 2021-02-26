@@ -5,6 +5,9 @@ const User = mongoose.model('user',
     UID:{type:String,index:true,unique:true},
     email:{type:String,unique:true},
     Level:{type:String,required:true},
-    following:[String]
+    following:[{
+        orgId:String,
+        orgName:String
+    }]
 })
 module.exports = User
