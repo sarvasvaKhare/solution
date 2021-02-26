@@ -283,15 +283,15 @@ app.post('/updatepro',async (req,res)=>{
 
 app.post('/like', async (req,res)=>{
   const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
-   const post = await OrgFeed.findById(req.body.id)
-   console.log(post)
-   post.likes.push({
-     userId: {
-       $ne:ticket.modprofile.UID
-      },
-     amount :req.body.amount||0
-    })
-   post.save().then((doc)=>{
+  var conditions = {
+    _id:req.body.id,
+    "likes.userId": {
+      $ne: ticket.modprofile.UID
+    }}
+    var update = {
+      $addToSet: { likes: { userId:ticket.modprofile.UID, orgname: req.body.amount } }
+  }
+  OrgFeed.findOneAndUpdate(conditions,update,{new: true}).then((doc)=>{
     res.status(200).send(doc)
    }).catch((err)=>{
     res.status(400).send(err)
@@ -301,27 +301,31 @@ app.post('/like', async (req,res)=>{
 app.post('/follow', async (req,res)=>{
   const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
   if(ticket.orgprofile==undefined){
-    const user =organisation.findOne({orgId:ticket.orgprofile.orgId})
-    user.following.push({
-      orgId: {
+    var conditions = {
+      orgId:ticket.orgprofile.orgId,
+      "following.orgId": {
         $ne: req.body.orgId
-      },
-      orgname: req.body.orgname
-    })
-    user.save().then(()=>{
+      }}
+      var update = {
+        $addToSet: { following: { orgId: req.body.orgId, orgname: req.body.orgname } }
+    }
+    
+    organisation.findOne(conditions,update,{new: true}).then((doc)=>{
       res.status(200).send(doc)
     }).catch((err)=>{
      res.status(400).send(err)
     })
   }else{
-    const user = User.findOne({UID:ticket.doc.UID})
-    user.following.push({
-      orgId: {
+    var conditions = {
+      orgId:ticket.orgprofile.orgId,
+      "following.orgId": {
         $ne: req.body.orgId
-      },
-      orgname: req.body.orgname
-    })
-    user.save().then(()=>{
+      }}
+    var update = {
+        $addToSet: { following: { orgId: req.body.orgId, orgname: req.body.orgname } }
+    }
+    
+    User.findOne(conditions,update,{new: true}).then((doc)=>{
       res.status(200).send(doc)
     }).catch((err)=>{
      res.status(400).send(err)
