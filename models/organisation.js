@@ -10,7 +10,7 @@ const organisation = mongoose.model('organisation',
     photo:String,
     tagline:String,
     following:[{
-        orgId:{type:String,unique:true},
+        orgId:{type:String},
         orgName:String
     }]
 })
