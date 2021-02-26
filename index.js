@@ -294,7 +294,6 @@ app.post('/like', (req,res)=>{
    })
 })
 
-
 //server up check
 app.listen(port, () => {
   console.log('Server is up on port ' + port)
