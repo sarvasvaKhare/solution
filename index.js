@@ -343,6 +343,80 @@ app.post('/follow', async (req,res)=>{
     })
   }
 })
+
+app.delete('/like', async(req,res)=>{
+  const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
+  var conditions = {
+    _id:req.body.id,
+    "likes.userId": {
+      $ne: ticket.modprofile.UID
+    }}
+    var update = {
+      $pull: { likes: { userId:ticket.modprofile.UID, amount: req.body.amount } }
+  }
+  OrgFeed.findOneAndUpdate(conditions,update,{new: true}).then((doc)=>{
+    if(doc==null){
+      res.status(200).send({"msg":"already not liked"})
+    }else{
+    res.status(200).send(doc)
+    }
+   }).catch((err)=>{
+    res.status(400).send(err)
+   })
+})
+
+app.delete('/follow', async (req,res)=>{
+  const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
+  if(ticket.orgprofile==undefined){
+    var conditions = {
+      "UID":ticket.doc.UID,
+      "following.orgId": {
+        $ne: req.body.orgId
+      }}
+      var update = {
+        $pull: { following: { orgId: req.body.orgId, orgName: req.body.orgName } }
+    }
+    
+    User.findOneAndUpdate(conditions,update,{new: true}).then((doc)=>{
+      if(doc==null){
+        res.status(200).send({"msg":"already followed"})
+      }else{
+      res.status(200).send(doc)
+      }
+    }).catch((err)=>{
+     res.status(400).send(err)
+    })
+  }else{
+    var conditions = {
+      "orgId":ticket.orgprofile.orgId,
+      "following.orgId": {
+        $ne: req.body.orgId
+      }}
+    var update = {
+        $pull: { following: { orgId: req.body.orgId, orgName: req.body.orgName } }
+    }
+    organisation.findOneAndUpdate(conditions,update,{new: true}).then((doc)=>{
+      if(doc==null){
+        res.status(200).send({"msg":"already followed"})
+      }else{
+      res.status(200).send(doc)
+      }
+    }).catch((err)=>{
+     res.status(400).send(err)
+    })
+  }
+})
+
+app.delete('/orgfeed', async (req,res)=>{
+  const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
+  const posts= await OrgFeed.findOneAndDelete({orgId:ticket.orgprofile.orgId})
+  if(posts==null){
+    res.status(404).send({"msg":"not found"})
+  }else{
+    res.status(200).send(posts)
+  }
+})
+
 //server up check
 app.listen(port, () => {
   console.log('Server is up on port ' + port)
