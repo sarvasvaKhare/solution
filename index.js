@@ -179,9 +179,7 @@ app.post('/mod',async (req,res)=>{
       })
     })
   }).catch((err)=>{
-      admin.auth().deleteUser(user.uid).then(()=>{
         res.status(400).send(err)
-      })
   })
 })
 
@@ -294,6 +292,12 @@ app.post('/like', (req,res)=>{
    })
 })
 
+app.post('/follow', async (req,res)=>{
+  const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
+  if(ticket.orgprofile){
+    const user =organisation.findOne()
+  }
+})
 //server up check
 app.listen(port, () => {
   console.log('Server is up on port ' + port)
