@@ -286,7 +286,9 @@ app.post('/like', async (req,res)=>{
    const post = await OrgFeed.findById(req.body.id)
    console.log(post)
    post.likes.push({
-     userId: ticket.modprofile.UID,
+     userId: {
+       $ne:ticket.modprofile.UID
+      },
      amount :req.body.amount||0
     })
    post.save().then((doc)=>{
@@ -300,7 +302,12 @@ app.post('/follow', async (req,res)=>{
   const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
   if(ticket.orgprofile==undefined){
     const user =organisation.findOne({orgId:ticket.orgprofile.orgId})
-    user.following.push(req.body.data)
+    user.following.push({
+      orgId: {
+        $ne: req.body.orgId
+      },
+      orgname: req.body.orgname
+    })
     user.save().then(()=>{
       res.status(200).send(doc)
     }).catch((err)=>{
@@ -308,7 +315,12 @@ app.post('/follow', async (req,res)=>{
     })
   }else{
     const user = User.findOne({UID:ticket.doc.UID})
-    user.following.push(req.body.data)
+    user.following.push({
+      orgId: {
+        $ne: req.body.orgId
+      },
+      orgname: req.body.orgname
+    })
     user.save().then(()=>{
       res.status(200).send(doc)
     }).catch((err)=>{
