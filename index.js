@@ -289,10 +289,14 @@ app.post('/like', async (req,res)=>{
       $ne: ticket.modprofile.UID
     }}
     var update = {
-      $addToSet: { likes: { userId:ticket.modprofile.UID, orgname: req.body.amount } }
+      $addToSet: { likes: { userId:ticket.modprofile.UID, amount: req.body.amount } }
   }
   OrgFeed.findOneAndUpdate(conditions,update,{new: true}).then((doc)=>{
+    if(doc==null){
+      res.status(200).send({"msg":"already liked"})
+    }else{
     res.status(200).send(doc)
+    }
    }).catch((err)=>{
     res.status(400).send(err)
    })
@@ -311,7 +315,11 @@ app.post('/follow', async (req,res)=>{
     }
     
     organisation.findOne(conditions,update,{new: true}).then((doc)=>{
+      if(doc==null){
+        res.status(200).send({"msg":"already followed"})
+      }else{
       res.status(200).send(doc)
+      }
     }).catch((err)=>{
      res.status(400).send(err)
     })
@@ -326,7 +334,11 @@ app.post('/follow', async (req,res)=>{
     }
     
     User.findOne(conditions,update,{new: true}).then((doc)=>{
+      if(doc==null){
+        res.status(200).send({"msg":"already followed"})
+      }else{
       res.status(200).send(doc)
+      }
     }).catch((err)=>{
      res.status(400).send(err)
     })
