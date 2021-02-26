@@ -314,7 +314,7 @@ app.post('/follow', async (req,res)=>{
         $addToSet: { following: { orgId: req.body.orgId, orgName: req.body.orgName } }
     }
     
-    User.findOne(conditions,update,{new: true}).then((doc)=>{
+    User.findOneAndUpdate(conditions,update,{new: true}).then((doc)=>{
       if(doc==null){
         res.status(200).send({"msg":"already followed"})
       }else{
@@ -329,13 +329,10 @@ app.post('/follow', async (req,res)=>{
       "following.orgId": {
         $ne: req.body.orgId
       }}
-    console.log(ticket.orgprofile.orgId)
     var update = {
         $addToSet: { following: { orgId: req.body.orgId, orgName: req.body.orgName } }
     }
-    console.log(req.body.orgId)
-    console.log(req.body.orgName)
-    organisation.findOne(conditions,update,{new: true}).then((doc)=>{
+    organisation.findOneAndUpdate(conditions,update,{new: true}).then((doc)=>{
       if(doc==null){
         res.status(200).send({"msg":"already followed"})
       }else{
