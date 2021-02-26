@@ -106,8 +106,8 @@ app.post('/org', async (req, res) => {
             if(!doc){
                 mod.save().then((file)=>{
                   neworg.save().then((doc)=>{
-                    const token = jwt.sign({"modprofile":doc,"orgprofile":file}, 'sarvasva')
-                    res.status(200).send({"jwt":token,"modprofile":doc,"orgprofile":file})
+                    const token = jwt.sign({"modprofile":file,"orgprofile":doc}, 'sarvasva')
+                    res.status(200).send({"jwt":token,"modprofile":file,"orgprofile":doc})
                 }).catch((err)=>{
                   admin.auth().deleteUser(user.uid).then(() => {console.log({"msg":"Successfully deleted user"})
                   res.status(400).send(err)}).catch((error) => {console.log(error);});
