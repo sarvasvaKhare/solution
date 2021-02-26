@@ -347,10 +347,8 @@ app.post('/follow', async (req,res)=>{
 app.delete('/like', async(req,res)=>{
   const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
   var conditions = {
-    _id:req.body.id,
-    "likes.userId": {
-      $ne: ticket.modprofile.UID
-    }}
+    _id:req.body.id
+  }
     var update = {
       $pull: { likes: { userId:ticket.modprofile.UID, amount: req.body.amount } }
   }
@@ -369,10 +367,8 @@ app.delete('/follow', async (req,res)=>{
   const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
   if(ticket.orgprofile==undefined){
     var conditions = {
-      "UID":ticket.doc.UID,
-      "following.orgId": {
-        $ne: req.body.orgId
-      }}
+      "UID":ticket.doc.UID
+    }
       var update = {
         $pull: { following: { orgId: req.body.orgId, orgName: req.body.orgName } }
     }
@@ -388,10 +384,8 @@ app.delete('/follow', async (req,res)=>{
     })
   }else{
     var conditions = {
-      "orgId":ticket.orgprofile.orgId,
-      "following.orgId": {
-        $ne: req.body.orgId
-      }}
+      "orgId":ticket.orgprofile.orgId
+    }
     var update = {
         $pull: { following: { orgId: req.body.orgId, orgName: req.body.orgName } }
     }
