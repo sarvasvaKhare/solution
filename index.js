@@ -306,7 +306,7 @@ app.post('/follow', async (req,res)=>{
   const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
   if(ticket.orgprofile==undefined){
     var conditions = {
-      orgId:ticket.orgprofile.orgId,
+      UID:ticket.doc.UID,
       "following.orgId": {
         $ne: req.body.orgId
       }}
@@ -330,7 +330,7 @@ app.post('/follow', async (req,res)=>{
         $ne: req.body.orgId
       }}
     var update = {
-        $addToSet: { following: { orgId: req.body.orgId, orgname: req.body.orgname } }
+        $addToSet: { following: { orgId: req.body.orgId, orgName: req.body.orgName } }
     }
     
     User.findOne(conditions,update,{new: true}).then((doc)=>{
