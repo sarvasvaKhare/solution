@@ -299,7 +299,7 @@ app.post('/follow', async (req,res)=>{
   const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
   if(ticket.orgprofile==undefined){
     const user =organisation.findOne({orgId:ticket.orgprofile.orgId})
-    user.following.push(req.body.orgId)
+    user.following.push(req.body.data)
     user.save().then(()=>{
       res.status(200).send(doc)
     }).catch((err)=>{
