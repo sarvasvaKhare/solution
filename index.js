@@ -226,9 +226,9 @@ app.get('/login',async (req,res)=>{
 app.post('/orgname',async (req,res)=>{
   organisation.findOne({orgName:req.body.orgName}).then((doc)=>{
     if(doc){
-      res.status(400)
+      res.status(400).send()
     }else{
-      res.status(200)
+      res.status(200).send()
     }
   })
 })
