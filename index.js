@@ -410,12 +410,27 @@ app.delete('/orgfeed', async (req,res)=>{
     res.status(200).send(posts)
   }
 })
-// app.get('/feed',async (req,res)=>{
-//   const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
-//   OrgFeed.find({orgId: {$in: ticket.orgprofile.following}.orgId},)
-
-// })
-//server up check
+app.get('/feed',async (req,res)=>{
+  const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
+  const posts = OrgFeed.find({orgId: {$in: ticket.orgprofile.following}.orgId}).limit(10)
+  if(ticket.orgprofile){
+    const ID=ticket.orgprofile.orgID
+  }else{
+    const ID=ticket.profile.UID
+  }
+  for(var i=0;i<posts.size();i++){
+    var n=posts[i].likes.size()
+    posts[i].liked=false
+    for(var j=0;j<n;j++){
+        if(posts[i].likes[j].userId==ID){
+          posts[i].liked=true
+          break
+        }
+    }
+  }
+  res.status(200).send(posts)
+})
+// server up check
 app.listen(port, () => {
   console.log('Server is up on port ' + port)
 })
