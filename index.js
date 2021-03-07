@@ -226,9 +226,9 @@ app.get('/login',async (req,res)=>{
 app.post('/orgname',async (req,res)=>{
   organisation.findOne({orgName:req.body.orgName}).then((doc)=>{
     if(doc){
-      res.status(400).send({"Access":true})
+      res.status(400)
     }else{
-      res.status(200).send({"Access":false})
+      res.status(200)
     }
   })
 })
@@ -410,7 +410,11 @@ app.delete('/orgfeed', async (req,res)=>{
     res.status(200).send(posts)
   }
 })
+// app.get('/feed',async (req,res)=>{
+//   const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
+//   OrgFeed.find({orgId: {$in: ticket.orgprofile.following}.orgId},)
 
+// })
 //server up check
 app.listen(port, () => {
   console.log('Server is up on port ' + port)

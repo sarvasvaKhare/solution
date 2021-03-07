@@ -8,6 +8,12 @@ const User = mongoose.model('user',
     following:[{
         orgId:{type:String},
         orgName:String
+    }],
+    donations:[{
+        orgId:{type:String},
+        postId:{type:String},
+        orgName:{type:String},
+        postTitle:{type:String}
     }]
 })
 module.exports = User
