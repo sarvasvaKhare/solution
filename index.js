@@ -439,6 +439,7 @@ app.get('/search', async (req, res) => {
   var found_users = User.find({ orgName: /search_string/ })
   var search_results = []
   search_results = search_results.concat(found_orgs).concat(found_users)
+  
   if (!search_results.length)
     res.status(200).send({ "msg": "No Search Results!" })
   else
