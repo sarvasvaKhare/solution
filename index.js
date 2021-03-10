@@ -415,37 +415,44 @@ app.delete('/orgfeed', async (req,res)=>{
 app.get('/search', async (req, res) => {
   const ticket = jwt.verify(req.header('Authorization'), 'sarvasva')
   var search_string = req.header('search_query')
-  var found_orgs = organisation.find({ displayName: /search_string/ })
-  var found_users = User.find({ displayName: /search_string/ })
-  var search_results = []
-  search_results = search_results.concat(found_orgs).concat(found_users)
-  if (!search_results.length)
+  var found_orgs = organisation.find({ displayName: `/${search_string}/` })
+  var found_users = User.find({ displayName: `/${search_string}/` })
+  Array.prototype.push.apply(found_orgs,found_users);
+  if (!found_orgs.length)
     res.status(200).send({ "msg": "No Search Results!" })
   else
-    res.status(200).send(search_results)
+    res.status(200).send(found_orgs)
 })
 
+app.get('/feed',async (req,res)=>{
+  const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
+  const posts = OrgFeed.find({orgId: {$in: ticket.orgprofile.following}.orgId}).limit(10)
+  if(ticket.orgprofile){
+    const ID=ticket.orgprofile.orgID
+  }else{
+    const ID=ticket.profile.UID
+  }
+  for(var i=0;i<posts.size();i++){
+    var n=posts[i].likes.size()
+    posts[i].liked=false
+    for(var j=0;j<n;j++){
+        if(posts[i].likes[j].userId==ID){
+          posts[i].liked=true
+          break
+        }
+    }
+  }
+  res.status(200).send(posts)
+})
 
-// app.get('/feed',async (req,res)=>{
-//   const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
-//   const posts = OrgFeed.find({orgId: {$in: ticket.orgprofile.following}.orgId}).limit(10)
-//   if(ticket.orgprofile){
-//     const ID=ticket.orgprofile.orgID
-//   }else{
-//     const ID=ticket.profile.UID
-//   }
-//   for(var i=0;i<posts.size();i++){
-//     var n=posts[i].likes.size()
-//     posts[i].liked=false
-//     for(var j=0;j<n;j++){
-//         if(posts[i].likes[j].userId==ID){
-//           posts[i].liked=true
-//           break
-//         }
-//     }
-//   }
-//   res.status(200).send(posts)
-// })
+app.get('/profile', async (req,res)=>{
+  const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
+  const ID=ticket.orgprofile.orgId
+  if(ID){
+    const file = await organisation.updateOne({orgId:ID})
+    res.status(200).send(file)
+  }
+})
 // server up check
 app.listen(port, () => {
   console.log('Server is up on port ' + port)
