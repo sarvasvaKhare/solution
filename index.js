@@ -143,11 +143,11 @@ app.post('/org', async (req, res) => {
       })
   }).catch((err)=>{
     console.log(err)
-    res.status(400).send({"msg":"cant get lastid"})
+    res.status(400).send({"err":err})
   })
 }).catch((err)=>{
   console.log(err)
-  res.status(400).send({"msg":"you are an imposter"})
+  res.status(400).send({"err":err})
 })
 })                          
 
@@ -175,11 +175,11 @@ app.post('/mod',async (req,res)=>{
         res.status(200).send({"jwt":token,"modprofile":doc,"orgprofile":file})
     }).catch((err)=>{
       admin.auth().deleteUser(user.uid).then(()=>{
-        res.status(404).send(err)
+        res.status(404).send({"err":err})
       })
     })
   }).catch((err)=>{
-        res.status(400).send(err)
+        res.status(400).send({"err":err})
   })
 })
 
@@ -205,7 +205,7 @@ app.post('/add',async(req,res)=>{
       res.status(200).send({"jwt":token,"profile":doc})
     }
     }).catch((err)=>{
-      res.status(400).send(err)
+      res.status(400).send({"err":err})
     })
 })
 
@@ -219,7 +219,7 @@ app.get('/login',async (req,res)=>{
         res.status(200).send({"jwt":ticket,"modprofile":doc,"orgprofile":file})
     } catch(err){
       console.log(err)
-      res.status(403).send('you are an imposter')
+      res.status(403).send({"err":err})
     }
 })
 
@@ -260,7 +260,7 @@ app.post('/orgfeed', async (req,res)=>{
   post.save().then((doc)=>{
     res.status(200).send(doc)
   }).catch((err)=>{
-    res.status(400).send(err)
+    res.status(400).send({"err":err})
   })
 })
 
@@ -298,7 +298,7 @@ app.post('/like', async (req,res)=>{
     res.status(200).send(doc)
     }
    }).catch((err)=>{
-    res.status(400).send(err)
+    res.status(400).send({"err":err})
    })
 })
 
@@ -321,7 +321,7 @@ app.post('/follow', async (req,res)=>{
       res.status(200).send(doc)
       }
     }).catch((err)=>{
-     res.status(400).send(err)
+     res.status(400).send({"err":err})
     })
   }else{
     var conditions = {
@@ -339,7 +339,7 @@ app.post('/follow', async (req,res)=>{
       res.status(200).send(doc)
       }
     }).catch((err)=>{
-     res.status(400).send(err)
+     res.status(400).send({"err":err})
     })
   }
 })
@@ -359,7 +359,7 @@ app.delete('/like', async(req,res)=>{
     res.status(200).send(doc)
     }
    }).catch((err)=>{
-    res.status(400).send(err)
+    res.status(400).send({"err":err})
    })
 })
 
@@ -380,7 +380,7 @@ app.delete('/follow', async (req,res)=>{
       res.status(200).send(doc)
       }
     }).catch((err)=>{
-     res.status(400).send(err)
+     res.status(400).send({"err":err})
     })
   }else{
     var conditions = {
@@ -396,7 +396,7 @@ app.delete('/follow', async (req,res)=>{
       res.status(200).send(doc)
       }
     }).catch((err)=>{
-     res.status(400).send(err)
+     res.status(400).send({"err":err})
     })
   }
 })
@@ -410,26 +410,6 @@ app.delete('/orgfeed', async (req,res)=>{
     res.status(200).send(posts)
   }
 })
-app.get('/feed',async (req,res)=>{
-  const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
-  const posts = OrgFeed.find({orgId: {$in: ticket.orgprofile.following}.orgId}).limit(10)
-  if(ticket.orgprofile){
-    const ID=ticket.orgprofile.orgID
-  }else{
-    const ID=ticket.profile.UID
-  }
-  for(var i=0;i<posts.size();i++){
-    var n=posts[i].likes.size()
-    posts[i].liked=false
-    for(var j=0;j<n;j++){
-        if(posts[i].likes[j].userId==ID){
-          posts[i].liked=true
-          break
-        }
-    }
-  }
-  res.status(200).send(posts)
-})
 
 // GET endpoint to return search results
 app.get('/search', async (req, res) => {
@@ -439,13 +419,33 @@ app.get('/search', async (req, res) => {
   var found_users = User.find({ orgName: /search_string/ })
   var search_results = []
   search_results = search_results.concat(found_orgs).concat(found_users)
-  
   if (!search_results.length)
     res.status(200).send({ "msg": "No Search Results!" })
   else
     res.status(200).send(search_results)
 })
 
+
+// app.get('/feed',async (req,res)=>{
+//   const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
+//   const posts = OrgFeed.find({orgId: {$in: ticket.orgprofile.following}.orgId}).limit(10)
+//   if(ticket.orgprofile){
+//     const ID=ticket.orgprofile.orgID
+//   }else{
+//     const ID=ticket.profile.UID
+//   }
+//   for(var i=0;i<posts.size();i++){
+//     var n=posts[i].likes.size()
+//     posts[i].liked=false
+//     for(var j=0;j<n;j++){
+//         if(posts[i].likes[j].userId==ID){
+//           posts[i].liked=true
+//           break
+//         }
+//     }
+//   }
+//   res.status(200).send(posts)
+// })
 // server up check
 app.listen(port, () => {
   console.log('Server is up on port ' + port)
