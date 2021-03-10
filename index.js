@@ -235,7 +235,8 @@ app.post('/orgname',async (req,res)=>{
 
 app.get('/orgfeed', async (req,res)=>{
   const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
-  const posts= await OrgFeed.find({orgId:ticket.orgprofile.orgId}).sort({created_at:-1})
+  const posts= await OrgFeed.find({orgId:ticket.orgprofile.displayName}).sort({created_at:-1})
+  console.log(posts)
   res.status(200).send(posts)  
 })
 
@@ -415,8 +416,9 @@ app.delete('/orgfeed', async (req,res)=>{
 app.get('/search', async (req, res) => {
   const ticket = jwt.verify(req.header('Authorization'), 'sarvasva')
   var search_string = req.header('search_query')
-  var found_orgs = organisation.find({ displayName: `/${search_string}/` })
-  var found_users = User.find({ displayName: `/${search_string}/` })
+  var searchKey = new RegExp(search_string, 'i')
+  var found_orgs = await organisation.find({ displayName: searchKey})
+  var found_users = await User.find({ displayName: searchKey})
   Array.prototype.push.apply(found_orgs,found_users);
   if (!found_orgs.length)
     res.status(200).send({ "msg": "No Search Results!" })
