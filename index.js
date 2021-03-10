@@ -430,6 +430,21 @@ app.get('/feed',async (req,res)=>{
   }
   res.status(200).send(posts)
 })
+
+// GET endpoint to return search results
+app.get('/search', async (req, res) => {
+  const ticket = jwt.verify(req.header('Authorization'), 'sarvasva')
+  var search_string = req.header('search_query')
+  var found_orgs = organisation.find({ orgName: /search_string/ })
+  var found_users = User.find({ orgName: /search_string/ })
+  var search_results = []
+  search_results = search_results.concat(found_orgs).concat(found_users)
+  if (!search_results.length)
+    res.status(200).send({ "msg": "No Search Results!" })
+  else
+    res.status(200).send(search_results)
+})
+
 // server up check
 app.listen(port, () => {
   console.log('Server is up on port ' + port)
