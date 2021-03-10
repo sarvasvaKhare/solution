@@ -415,8 +415,8 @@ app.delete('/orgfeed', async (req,res)=>{
 app.get('/search', async (req, res) => {
   const ticket = jwt.verify(req.header('Authorization'), 'sarvasva')
   var search_string = req.header('search_query')
-  var found_orgs = organisation.find({ orgName: /search_string/ })
-  var found_users = User.find({ orgName: /search_string/ })
+  var found_orgs = organisation.find({ displayName: /search_string/ })
+  var found_users = User.find({ displayName: /search_string/ })
   var search_results = []
   search_results = search_results.concat(found_orgs).concat(found_users)
   if (!search_results.length)
