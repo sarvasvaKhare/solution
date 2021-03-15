@@ -449,7 +449,7 @@ app.get('/feed',async (req,res)=>{
   res.status(200).send(posts)
 })
 
-app.get('profile', async (req,res)=>{
+app.get('/profile', async (req,res)=>{
   const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
   const ID=ticket.orgprofile.orgId
   if(ID){
