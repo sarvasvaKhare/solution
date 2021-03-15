@@ -427,10 +427,11 @@ app.get('/search', async (req, res) => {
 })
 
 app.get('/feed',async (req,res)=>{
-  const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
-  const posts = OrgFeed.find({orgId: {$in: ticket.orgprofile.following}.orgId}).limit(10)
   if(ticket.orgprofile){
     const ID=ticket.orgprofile.orgID
+    const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
+    const posts = OrgFeed.find({orgId: {$in: ticket.orgprofile.following.orgId}}).limit(10)
+  console.log(posts)
   }else{
     const ID=ticket.profile.UID
   }
@@ -440,6 +441,7 @@ app.get('/feed',async (req,res)=>{
     for(var j=0;j<n;j++){
         if(posts[i].likes[j].userId==ID){
           posts[i].liked=true
+          console.log(posts[i].liked)
           break
         }
     }
@@ -447,13 +449,19 @@ app.get('/feed',async (req,res)=>{
   res.status(200).send(posts)
 })
 
-app.get('/profile', async (req,res)=>{
+app.get('profile', async (req,res)=>{
   const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
   const ID=ticket.orgprofile.orgId
   if(ID){
-    const file = await organisation.updateOne({orgId:ID})
+    const file = await organisation.findOne({orgId:ID})
     res.status(200).send(file)
   }
+})
+app.get('/mods',async (req,res)=>{
+  const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
+  const ID=ticket.orgprofile.orgId
+  const file = await moderator.find({orgId:ID})
+  res.status(200).send(file)
 })
 // server up check
 app.listen(port, () => {
