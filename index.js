@@ -427,13 +427,19 @@ app.get('/search', async (req, res) => {
 })
 
 app.get('/feed',async (req,res)=>{
+  const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
   if(ticket.orgprofile){
-    const ID=ticket.orgprofile.orgID
-    const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
-    const posts = OrgFeed.find({orgId: {$in: ticket.orgprofile.following.orgId}}).limit(10)
-  console.log(posts)
+    var list=[];
+    for(var i=0;i<ticket.orgprofile.following.size();i++){
+      list.push(ticket.orgprofile.following[i].orgId)
+    }
+    const posts = OrgFeed.find({orgId: {$in:list}}).limit(10)
   }else{
-    const ID=ticket.profile.UID
+    var list=[];
+    for(var i=0;i<ticket.doc.following.size();i++){
+      list.push(ticket.doc.following[i].orgId)
+    }
+    const posts = OrgFeed.find({orgId: {$in:list}}).limit(10)
   }
   for(var i=0;i<posts.size();i++){
     var n=posts[i].likes.size()
