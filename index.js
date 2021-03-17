@@ -255,7 +255,8 @@ app.post('/orgfeed', async (req,res)=>{
     blogLink: req.body.blogLink,
     Shoutout: req.body.Shoutout,
     orgId: ticket.orgprofile.orgId,
-    likes: req.body.likes
+    likes: req.body.likes,
+    liked: false
   })
   console.log(post)
   post.save().then((doc)=>{
@@ -294,9 +295,9 @@ app.post('/like', async (req,res)=>{
   }
   OrgFeed.findOneAndUpdate(conditions,update,{new: true}).then((doc)=>{
     if(doc==null){
-      res.status(200).send({"msg":"already liked"})
+      res.status(400).send({"msg":"already liked"})
     }else{
-    res.status(200).send(doc)
+    res.status(200).send({"success":true})
     }
    }).catch((err)=>{
     res.status(400).send({"err":err})
@@ -335,9 +336,9 @@ app.post('/follow', async (req,res)=>{
     }
     organisation.findOneAndUpdate(conditions,update,{new: true}).then((doc)=>{
       if(doc==null){
-        res.status(200).send({"msg":"already followed"})
+        res.status(400).send({"msg":"already followed"})
       }else{
-      res.status(200).send(doc)
+      res.status(200).send({"success":true})
       }
     }).catch((err)=>{
      res.status(400).send({"err":err})
@@ -355,9 +356,9 @@ app.delete('/like', async(req,res)=>{
   }
   OrgFeed.findOneAndUpdate(conditions,update,{new: true}).then((doc)=>{
     if(doc==null){
-      res.status(200).send({"msg":"already not liked"})
+      res.status(400).send({"msg":"already not liked"})
     }else{
-    res.status(200).send(doc)
+    res.status(200).send({"success":true})
     }
    }).catch((err)=>{
     res.status(400).send({"err":err})
@@ -376,9 +377,9 @@ app.delete('/follow', async (req,res)=>{
     
     User.findOneAndUpdate(conditions,update,{new: true}).then((doc)=>{
       if(doc==null){
-        res.status(200).send({"msg":"already followed"})
+        res.status(400).send({"msg":"already followed"})
       }else{
-      res.status(200).send(doc)
+      res.status(200).send({"success":true})
       }
     }).catch((err)=>{
      res.status(400).send({"err":err})
@@ -408,7 +409,7 @@ app.delete('/orgfeed', async (req,res)=>{
   if(posts==null){
     res.status(404).send({"msg":"not found"})
   }else{
-    res.status(200).send(posts)
+    res.status(200).send({"success":true})
   }
 })
 
@@ -428,26 +429,30 @@ app.get('/search', async (req, res) => {
 
 app.get('/feed',async (req,res)=>{
   const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
+  var posts=[]
+  var ID='';
   if(ticket.orgprofile){
+    ID=ticket.orgprofile.UID
     var list=[];
-    for(var i=0;i<ticket.orgprofile.following.size();i++){
-      list.push(ticket.orgprofile.following[i].orgId)
+    var newdata= await organisation.findOne({orgId:ticket.orgprofile.orgId})
+    for(var i=0;i<newdata.following.length;i++){
+      list.push(newdata.following[i].orgId)
     }
-    const posts = await OrgFeed.find({orgId: {$in:list}}).limit(10)
+    posts = await OrgFeed.find({orgId: {$in:list}}).limit(10)
   }else{
     var list=[];
-    for(var i=0;i<ticket.doc.following.size();i++){
-      list.push(ticket.doc.following[i].orgId)
+    ID=ticket.doc.UID
+    var newdata= await User.findOne({UID:ticket.doc.UID})
+    for(var i=0;i<newdata.following.size();i++){
+      list.push(newdata.following[i].orgId)
     }
-    const posts =  await OrgFeed.find({orgId: {$in:list}}).limit(10)
+    posts =  await OrgFeed.find({orgId: {$in:list}}).limit(10)
   }
-  for(var i=0;i<posts.size();i++){
-    var n=posts[i].likes.size()
-    posts[i].liked=false
+  for(var i=0;i<posts.length;i++){
+    var n=posts[i].likes.length
     for(var j=0;j<n;j++){
         if(posts[i].likes[j].userId==ID){
           posts[i].liked=true
-          console.log(posts[i].liked)
           break
         }
     }
