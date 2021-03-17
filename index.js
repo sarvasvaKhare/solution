@@ -242,7 +242,6 @@ app.get('/orgfeed', async (req,res)=>{
 
 app.post('/orgfeed', async (req,res)=>{
   const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
-  console.log(ticket)
   console.log(ticket.orgprofile.orgId)
   const post = new OrgFeed({
     Type: req.body.Type,
@@ -438,7 +437,7 @@ app.get('/feed',async (req,res)=>{
     for(var i=0;i<newdata.following.length;i++){
       list.push(newdata.following[i].orgId)
     }
-    posts = await OrgFeed.find({orgId: {$in:list}}).limit(10)
+    posts = await OrgFeed.find({orgId: {$in:list}}).sort({created_at:-1}).limit(10)
   }else{
     var list=[];
     ID=ticket.doc.UID
@@ -446,7 +445,7 @@ app.get('/feed',async (req,res)=>{
     for(var i=0;i<newdata.following.size();i++){
       list.push(newdata.following[i].orgId)
     }
-    posts =  await OrgFeed.find({orgId: {$in:list}}).limit(10)
+    posts =  await OrgFeed.find({orgId: {$in:list}}).sort({created_at:-1}).limit(10)
   }
   for(var i=0;i<posts.length;i++){
     var n=posts[i].likes.length
