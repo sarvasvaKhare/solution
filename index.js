@@ -433,13 +433,13 @@ app.get('/feed',async (req,res)=>{
     for(var i=0;i<ticket.orgprofile.following.size();i++){
       list.push(ticket.orgprofile.following[i].orgId)
     }
-    const posts = OrgFeed.find({orgId: {$in:list}}).limit(10)
+    const posts = await OrgFeed.find({orgId: {$in:list}}).limit(10)
   }else{
     var list=[];
     for(var i=0;i<ticket.doc.following.size();i++){
       list.push(ticket.doc.following[i].orgId)
     }
-    const posts = OrgFeed.find({orgId: {$in:list}}).limit(10)
+    const posts =  await OrgFeed.find({orgId: {$in:list}}).limit(10)
   }
   for(var i=0;i<posts.size();i++){
     var n=posts[i].likes.size()
