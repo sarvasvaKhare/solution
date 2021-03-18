@@ -4,7 +4,7 @@ const User = mongoose.model('user',
     photo:{type:String},
     UID:{type:String,index:true,unique:true},
     email:{type:String,unique:true},
-    Level:{type:String,required:true},
+    Level:{type:Number,required:true},
     following:[{
         orgId:{type:String},
         orgName:String
@@ -14,6 +14,7 @@ const User = mongoose.model('user',
         postId:{type:String},
         orgName:{type:String},
         postTitle:{type:String}
-    }]
+    }],
+    points: Number
 })
 module.exports = User

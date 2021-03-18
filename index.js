@@ -4,6 +4,9 @@ const app = express()
 
 // setting .env variables
 require('dotenv').config()
+function getRndInteger(min, max) {
+  return Math.floor(Math.random() * (max - min + 1) ) + min;
+}
 
 // firebase admin
 var admin = require("firebase-admin");
@@ -62,6 +65,9 @@ const moderator=require('./models/moderators');
 const { request } = require('express');
 const User = require('./models/User');
 const OrgFeed = require('./models/OrgFeed');
+const pay = require('./models/Pay');
+const Coupon = require('./models/Coupons');
+const applicant = require('./models/applicants');
 
 //index routes
 /**
@@ -167,7 +173,7 @@ app.post('/mod',async (req,res)=>{
       UID: user.uid,
       email: user.email,
       orgId: token.orgprofile.orgId,
-      access: req.body.access||'HEAD'
+      access: req.body.access||'MOD'
     })
     mod.save().then(async (doc)=>{
       const file = await organisation.findOne({orgId:doc.orgId})
@@ -192,7 +198,8 @@ app.post('/add',async(req,res)=>{
         email:token.email,
         displayName:token.name,
         photo:token.picture,
-        Level:req.body.level||'1'
+        Level:req.body.level||1,
+        points:0
       })
       newUser.save().then((doc)=>{
         var token = jwt.sign({doc}, 'sarvasva')
@@ -473,6 +480,68 @@ app.get('/mods',async (req,res)=>{
   const file = await moderator.find({orgId:ID})
   res.status(200).send(file)
 })
+app.post('/payment',async (req,res)=>{
+  const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
+  const newpayment = new pay({
+    UID: ticket.doc.UID,
+    OrgId: req.body.orgId
+  })
+  newpayment.save().then(async ()=>{
+    var prob= true;
+    var getCP=null;
+    if(getRndInteger(1,4)%4==0){
+      prob=false
+    }
+    if(prob){
+      getCP= await Coupon.findOne({Quantity:{$ne:0}})
+      getCP.Quantity=getCP.Quantity-1
+    }
+    const doc = await User.findOne({UID:ticket.doc.UID})
+    doc.points=doc.points+5
+    if((doc.points/doc.level)>=10){
+        doc.level=doc.level+1
+    }
+    doc.save().then(()=>{
+      res.status(200).send({"success":true,"coupon":getCP})
+  }).catch((err)=>{
+    console.log(err)
+    res.status(400).send({"msg":"points error"})
+    })
+  }).catch((err)=>{
+    console.log(err)
+    res.status(400).send({"msg":"error in payment addition"})
+  })
+})
+app.post('/application', async (req,res)=>{
+  const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
+  if(ticket.doc){
+    const newapplicant = new applicant({
+      email:ticket.doc.email,
+      Reason: req.body.Reason,
+      orgId: req.body.orgId,
+      ModEmail: req.body.ModEmail
+    })
+    newapplicant.save().then(()=>{
+      res.status(200).send({"success":true})
+    }).catch((err)=>{
+      console.log(err)
+      res.status(400).send({"msg":"error"})
+    })
+  }else{
+    res.status(400).send({"msg":"you are already a mod"})
+  }
+})
+app.get('/application', async (req,res)=>{
+  const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
+  const applicants = await applicant.find({orgId:ticket.orgprofile.orgId})
+  res.status(200).send(applicants)
+})
+app.post('/reject', async (req,res)=>{
+  const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
+  const applicants = await applicant.findOneAndDelete({email:req.body.email})
+  res.status(200).send({"success":true})
+})
+
 // server up check
 app.listen(port, () => {
   console.log('Server is up on port ' + port)
