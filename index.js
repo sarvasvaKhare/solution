@@ -448,8 +448,8 @@ app.get('/feed',async (req,res)=>{
   }else{
     var list=[];
     ID=ticket.doc.UID
-    var newdata= await User.findOne({UID:ticket.doc.UID})
-    for(var i=0;i<newdata.followin.length;i++){
+    var newdata= await User.findOne({email:ticket.doc.email})
+    for(var i=0;i<newdata.following.length;i++){
       list.push(newdata.following[i].orgId)
     }
     posts =  await OrgFeed.find({orgId: {$in:list}}).sort({created_at:-1})
