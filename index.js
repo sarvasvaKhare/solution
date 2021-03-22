@@ -449,7 +449,7 @@ app.get('/feed',async (req,res)=>{
     var list=[];
     ID=ticket.doc.UID
     var newdata= await User.findOne({UID:ticket.doc.UID})
-    for(var i=0;i<newdata.following.size();i++){
+    for(var i=0;i<newdata.followin.length;i++){
       list.push(newdata.following[i].orgId)
     }
     posts =  await OrgFeed.find({orgId: {$in:list}}).sort({created_at:-1})
@@ -493,10 +493,12 @@ app.post('/payment',async (req,res)=>{
       prob=false
     }
     if(prob){
-      getCP= await Coupon.findOne({Quantity:{$ne:0}})
+      getCP= await Coupon.findOne({"Quantity":{$ne:0}})
+      console.log(getCP)
       getCP.Quantity=getCP.Quantity-1
     }
-    const doc = await User.findOne({UID:ticket.doc.UID})
+    const doc = await User.findOne({"email":ticket.doc.email})
+    console.log(doc)
     doc.points=doc.points+5
     if((doc.points/doc.level)>=10){
         doc.level=doc.level+1
@@ -533,6 +535,7 @@ app.post('/application', async (req,res)=>{
 })
 app.get('/application', async (req,res)=>{
   const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
+  console.log(ticket.orgprofile.orgId)
   const applicants = await applicant.find({orgId:ticket.orgprofile.orgId})
   res.status(200).send(applicants)
 })
@@ -541,7 +544,18 @@ app.post('/reject', async (req,res)=>{
   const applicants = await applicant.findOneAndDelete({email:req.body.email})
   res.status(200).send({"success":true})
 })
-
+app.post('/coupon', async(req,res)=>{
+  const newcp= new Coupon({
+    text: req.body.text,
+    code: req.body.code,
+    name: req.body.name,
+    photo: req.body.photo,
+    Quantity: req.body.Quantity
+  })
+  newcp.save().then(()=>{
+    res.status(200).send()
+  })
+})
 // server up check
 app.listen(port, () => {
   console.log('Server is up on port ' + port)
