@@ -444,7 +444,7 @@ app.get('/feed',async (req,res)=>{
     for(var i=0;i<newdata.following.length;i++){
       list.push(newdata.following[i].orgId)
     }
-    posts = await OrgFeed.find({orgId: {$in:list}}).sort({created_at:-1}).limit(10)
+    posts = await OrgFeed.find({orgId: {$in:list}}).sort({created_at:-1})
   }else{
     var list=[];
     ID=ticket.doc.UID
@@ -452,7 +452,7 @@ app.get('/feed',async (req,res)=>{
     for(var i=0;i<newdata.following.size();i++){
       list.push(newdata.following[i].orgId)
     }
-    posts =  await OrgFeed.find({orgId: {$in:list}}).sort({created_at:-1}).limit(10)
+    posts =  await OrgFeed.find({orgId: {$in:list}}).sort({created_at:-1})
   }
   for(var i=0;i<posts.length;i++){
     var n=posts[i].likes.length
