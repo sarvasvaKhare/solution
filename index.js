@@ -434,6 +434,7 @@ app.get('/search', async (req, res) => {
 })
 
 app.get('/feed',async (req,res)=>{
+  if(req.header('Authorization')){
   const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
   var posts=[]
   var ID='';
@@ -464,6 +465,10 @@ app.get('/feed',async (req,res)=>{
     }
   }
   res.status(200).send(posts)
+}else{
+  posts = await OrgFeed.find().sort({created_at:-1}).limit(50)
+  res.status(200).send(posts)
+}
 })
 
 app.get('/profile', async (req,res)=>{
@@ -474,12 +479,14 @@ app.get('/profile', async (req,res)=>{
     res.status(200).send(file)
   }
 })
+
 app.get('/mods',async (req,res)=>{
   const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
   const ID=ticket.orgprofile.orgId
   const file = await moderator.find({orgId:ID})
   res.status(200).send(file)
 })
+
 app.post('/payment',async (req,res)=>{
   const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
   const newpayment = new pay({
@@ -514,6 +521,7 @@ app.post('/payment',async (req,res)=>{
     res.status(400).send({"msg":"error in payment addition"})
   })
 })
+
 app.post('/application', async (req,res)=>{
   const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
   if(ticket.doc){
@@ -533,17 +541,20 @@ app.post('/application', async (req,res)=>{
     res.status(400).send({"msg":"you are already a mod"})
   }
 })
+
 app.get('/application', async (req,res)=>{
   const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
   console.log(ticket.orgprofile.orgId)
   const applicants = await applicant.find({orgId:ticket.orgprofile.orgId})
   res.status(200).send(applicants)
 })
+
 app.post('/reject', async (req,res)=>{
   const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
   const applicants = await applicant.findOneAndDelete({email:req.body.email})
   res.status(200).send({"success":true})
 })
+
 app.post('/coupon', async(req,res)=>{
   const newcp= new Coupon({
     text: req.body.text,
