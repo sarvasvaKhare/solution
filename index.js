@@ -587,6 +587,11 @@ app.post('/paymentinfo',async(req,res)=>{
     res.status(200).send({"success":true})
   })
 })
+app.get('/paymentinfo',async(req,res)=>{
+  let data = await paymentinfo.findOne({orgId:req.body.orgId});
+  let data1 = await data.payments.get(`${req.body.name}`)
+  res.status(200).send(data1)
+})
 // server up check
 app.listen(port, () => {
   console.log('Server is up on port ' + port)
