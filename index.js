@@ -454,6 +454,7 @@ app.get('/feed',async (req,res)=>{
   const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
   var posts=[]
   var ID='';
+  
   if(ticket.orgprofile){
     ID=ticket.orgprofile.UID
     var list=[];
