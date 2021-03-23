@@ -454,7 +454,7 @@ app.get('/feed',async (req,res)=>{
   const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
   var posts=[]
   var ID='';
-  
+
   if(ticket.orgprofile){
     ID=ticket.orgprofile.UID
     var list=[];
@@ -470,6 +470,7 @@ app.get('/feed',async (req,res)=>{
   }else{
     var list=[];
     ID=ticket.doc.UID
+    
     var newdata= await User.findOne({email:ticket.doc.email})
     if(newdata.following.length){
     for(var i=0;i<newdata.following.length;i++){
