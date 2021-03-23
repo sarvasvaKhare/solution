@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const payinfoSchema = new mongoose.Schema({
-    OrgId:String,
+    orgId:String,
     google:{
         upiId: String,
         merchantName: String
