@@ -375,6 +375,7 @@ app.post('/unlike', async(req,res)=>{
     var update = {
       $pull: { likes: { userId:ID, amount: req.body.amount||0 } }
   }
+  
   OrgFeed.findOneAndUpdate(conditions,update,{new: true}).then((doc)=>{
     if(doc==null){
       res.status(400).send({"msg":"already not liked"})
