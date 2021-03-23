@@ -579,9 +579,11 @@ app.post('/coupon', async(req,res)=>{
 })
 app.post('/paymentinfo',async(req,res)=>{
   const newinfo = new paymentinfo({
-    payments: {}
+    google : {
+      upiId: req.body.upiId,
+      merchantName:req.body.merchantName
+    }
   })
-  payments.set(`${req.body.name}`, `${req.body.data}`)
   newinfo.save().then((doc)=>{
     console.log(doc)
     res.status(200).send({"success":true})
@@ -589,8 +591,7 @@ app.post('/paymentinfo',async(req,res)=>{
 })
 app.get('/paymentinfo',async(req,res)=>{
   let data = await paymentinfo.findOne({orgId:req.body.orgId});
-  let data1 = await data.payments.get(`${req.body.name}`)
-  res.status(200).send(data1)
+  res.status(200).send(data)
 })
 // server up check
 app.listen(port, () => {
