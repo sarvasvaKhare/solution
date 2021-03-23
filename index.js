@@ -612,6 +612,7 @@ app.get('/paymentinfo',async(req,res)=>{
   let data = await paymentinfo.findOne({orgId:req.body.orgId});
   res.status(200).send(data)
 })
+
 // server up check
 app.listen(port, () => {
   console.log('Server is up on port ' + port)
