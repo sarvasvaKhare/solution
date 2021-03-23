@@ -292,6 +292,7 @@ app.post('/updatepro',async (req,res)=>{
 
 app.post('/like', async (req,res)=>{
   const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
+  var ID=''
   if(ticket.doc){
     ID=ticket.doc.UID
   }
@@ -507,7 +508,8 @@ app.post('/payment',async (req,res)=>{
   const newpayment = new pay({
     UID: ticket.doc.UID,
     OrgId: req.body.orgId,
-    amount: req.body.amount
+    amount: req.body.amount,
+    id: req.body.id
   })
   newpayment.save().then(async ()=>{
     var prob= true;
@@ -596,6 +598,7 @@ app.post('/paymentinfo',async(req,res)=>{
     res.status(200).send({"success":true})
   })
 })
+
 app.get('/paymentinfo',async(req,res)=>{
   let data = await paymentinfo.findOne({orgId:req.body.orgId});
   res.status(200).send(data)
