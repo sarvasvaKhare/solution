@@ -362,11 +362,18 @@ app.post('/follow', async (req,res)=>{
 
 app.delete('/like', async(req,res)=>{
   const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
+  var ID=''
+  if(ticket.doc){
+    ID=ticket.doc.UID
+  }
+  if(ticket.modprofile){
+    ID=ticket.modprofile.UID
+  }
   var conditions = {
     _id:req.body.id
   }
     var update = {
-      $pull: { likes: { userId:ticket.modprofile.UID, amount: req.body.amount } }
+      $pull: { likes: { userId:ID, amount: req.body.amount } }
   }
   OrgFeed.findOneAndUpdate(conditions,update,{new: true}).then((doc)=>{
     if(doc==null){
