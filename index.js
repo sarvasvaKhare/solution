@@ -292,7 +292,9 @@ app.post('/updatepro',async (req,res)=>{
 
 app.post('/like', async (req,res)=>{
   const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
-  const ID=ticket.doc.UID
+  if(ticket.doc){
+    const ID=ticket.doc.UID
+  }
   if(ticket.modprofile){
     ID=ticket.modprofile.UID
   }
