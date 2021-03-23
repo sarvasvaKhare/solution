@@ -68,7 +68,7 @@ const OrgFeed = require('./models/OrgFeed');
 const pay = require('./models/Pay');
 const Coupon = require('./models/Coupons');
 const applicant = require('./models/applicants');
-
+const paymentinfo=require('./models/paymentinfo')
 //index routes
 /**
  *@swagger
@@ -575,6 +575,16 @@ app.post('/coupon', async(req,res)=>{
   })
   newcp.save().then(()=>{
     res.status(200).send()
+  })
+})
+app.post('/paymentinfo',async(req,res)=>{
+  const newinfo = new paymentinfo({
+    payments: {}
+  })
+  payments.set(`${req.body.name}`, `${req.body.data}`)
+  newinfo.save().then((doc)=>{
+    console.log(doc)
+    res.status(200).send({"success":true})
   })
 })
 // server up check
