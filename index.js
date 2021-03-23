@@ -500,7 +500,8 @@ app.post('/payment',async (req,res)=>{
   const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
   const newpayment = new pay({
     UID: ticket.doc.UID,
-    OrgId: req.body.orgId
+    OrgId: req.body.orgId,
+    amount: req.body.amount
   })
   newpayment.save().then(async ()=>{
     var prob= true;
