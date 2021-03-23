@@ -443,18 +443,26 @@ app.get('/feed',async (req,res)=>{
     ID=ticket.orgprofile.UID
     var list=[];
     var newdata= await organisation.findOne({orgId:ticket.orgprofile.orgId})
+    if(newdata.following.length){
     for(var i=0;i<newdata.following.length;i++){
       list.push(newdata.following[i].orgId)
     }
     posts = await OrgFeed.find({orgId: {$in:list}}).sort({created_at:-1})
   }else{
+    posts = await OrgFeed.find({}).sort({created_at:-1})
+  }
+  }else{
     var list=[];
     ID=ticket.doc.UID
     var newdata= await User.findOne({email:ticket.doc.email})
+    if(newdata.following.length){
     for(var i=0;i<newdata.following.length;i++){
       list.push(newdata.following[i].orgId)
     }
     posts =  await OrgFeed.find({orgId: {$in:list}}).sort({created_at:-1})
+  }else{
+    posts = await OrgFeed.find({}).sort({created_at:-1})
+  }
   }
   for(var i=0;i<posts.length;i++){
     var n=posts[i].likes.length
