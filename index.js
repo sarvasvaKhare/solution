@@ -467,7 +467,7 @@ app.get('/feed',async (req,res)=>{
   }
   res.status(200).send(posts)
 }else{
-  posts = await OrgFeed.find().sort({created_at:-1})
+  posts = await OrgFeed.find({}).sort({created_at:-1})
   res.status(200).send(posts)
 }
 })
