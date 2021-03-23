@@ -379,6 +379,7 @@ app.post('/unlike', async(req,res)=>{
     if(doc==null){
       res.status(400).send({"msg":"already not liked"})
     }else{
+      console.log(doc)
     res.status(200).send({"success":true,"id":doc._id})
     }
    }).catch((err)=>{
