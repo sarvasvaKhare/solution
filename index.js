@@ -360,7 +360,7 @@ app.post('/follow', async (req,res)=>{
   }
 })
 
-app.delete('/like', async(req,res)=>{
+app.post('/unlike', async(req,res)=>{
   const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
   var ID=''
   if(ticket.doc){
@@ -386,7 +386,7 @@ app.delete('/like', async(req,res)=>{
    })
 })
 
-app.delete('/follow', async (req,res)=>{
+app.post('/unfollow', async (req,res)=>{
   const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
   if(ticket.orgprofile==undefined){
     var conditions = {
