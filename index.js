@@ -293,7 +293,7 @@ app.post('/updatepro',async (req,res)=>{
 app.post('/like', async (req,res)=>{
   const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
   if(ticket.doc){
-    const ID=ticket.doc.UID
+    ID=ticket.doc.UID
   }
   if(ticket.modprofile){
     ID=ticket.modprofile.UID
@@ -304,7 +304,7 @@ app.post('/like', async (req,res)=>{
       $ne: ID
     }}
     var update = {
-      $addToSet: { likes: { userId:ID, amount: req.body.amount } }
+      $addToSet: { likes: { userId:ID, amount: req.body.amount||0} }
   }
   OrgFeed.findOneAndUpdate(conditions,update,{new: true}).then((doc)=>{
     if(doc==null){
