@@ -203,6 +203,7 @@ app.post('/add',async(req,res)=>{
       })
       newUser.save().then((doc)=>{
         var token = jwt.sign({doc}, 'sarvasva')
+        console.log(doc)
         res.status(200).send({"jwt":token,"profile":doc})
       }).catch((err)=>{
         res.status(400).send(err)
@@ -500,11 +501,11 @@ app.post('/payment',async (req,res)=>{
       prob=false
     }
     if(prob){
-      getCP= await Coupon.findOne({"Quantity":{$ne:0}})
+      getCP= await Coupon.findOne({Quantity:{$ne:0}})
       console.log(getCP)
       getCP.Quantity=getCP.Quantity-1
     }
-    const doc = await User.findOne({"email":ticket.doc.email})
+    const doc = await User.findOne({email:ticket.doc.email})
     console.log(doc)
     doc.points=doc.points+5
     if((doc.points/doc.level)>=10){
