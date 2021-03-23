@@ -309,9 +309,9 @@ app.post('/like', async (req,res)=>{
   }
   OrgFeed.findOneAndUpdate(conditions,update,{new: true}).then((doc)=>{
     if(doc==null){
-      res.status(400).send({"msg":"already liked","id":doc._id})
+      res.status(400).send({"msg":"already liked")
     }else{
-    res.status(200).send({"success":true})
+    res.status(200).send({"success":true},"id":doc._id})
     }
    }).catch((err)=>{
     res.status(400).send({"err":err})
