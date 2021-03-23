@@ -579,6 +579,7 @@ app.post('/coupon', async(req,res)=>{
 })
 app.post('/paymentinfo',async(req,res)=>{
   const newinfo = new paymentinfo({
+    orgId: req.body.orgId,
     google : {
       upiId: req.body.upiId,
       merchantName:req.body.merchantName
