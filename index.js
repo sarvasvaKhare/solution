@@ -440,7 +440,7 @@ app.delete('/orgfeed', async (req,res)=>{
 app.get('/search', async (req, res) => {
   var search_string = req.body.search_query
   var searchKey = new RegExp(search_string, 'i')
-  var found_orgs = await organisation.find({ displayName: searchKey})
+  var found_orgs = await organisation.find({ orgName: searchKey})
   var found_users = await User.find({ displayName: searchKey})
   if ((!found_orgs.length)&&(!found_users.length)){
     res.status(200).send({ "msg": "No Search Results!" })
