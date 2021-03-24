@@ -263,6 +263,7 @@ app.post('/orgfeed', async (req,res)=>{
     Shoutout: req.body.Shoutout,
     orgId: ticket.orgprofile.orgId,
     likes: req.body.likes,
+    orgName: ticket.orgprofile.orgName,
     liked: false
   })
   console.log(post)
@@ -309,7 +310,7 @@ app.post('/like', async (req,res)=>{
   }
   OrgFeed.findOneAndUpdate(conditions,update,{new: true}).then((doc)=>{
     if(doc==null){
-      res.status(400).send({"msg":"already liked"})
+      res.status(400).send({"err":"already liked"})
     }else{
     res.status(200).send({"success":true,"id" : doc._id})
     }
@@ -377,7 +378,7 @@ app.post('/unlike', async(req,res)=>{
   }
   OrgFeed.findOneAndUpdate(conditions,update,{new: true}).then((doc)=>{
     if(doc==null){
-      res.status(400).send({"msg":"already not liked"})
+      res.status(400).send({"err":"already not liked"})
     }else{
       console.log(doc)
     res.status(200).send({"success":true,"id":doc._id})

@@ -18,6 +18,7 @@ const orgSchema = new mongoose.Schema({
         userId:{type:String},
         amount:{type:Number}
     }],
+    orgName: String,
     liked: {type:Boolean}
 },{timestamps:true})
 const OrgFeed = mongoose.model('OrgFeed',orgSchema,'OrgFeed')
