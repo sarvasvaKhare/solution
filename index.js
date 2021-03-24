@@ -446,7 +446,6 @@ app.get('/search', async (req, res) => {
     res.status(200).send({ "msg": "No Search Results!" })
   }
   else{
-  console.log({"orgs":found_orgs,"users":found_users})
     res.status(200).send({"orgs":found_orgs,"users":found_users})
   }
 })
