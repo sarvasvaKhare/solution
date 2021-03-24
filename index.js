@@ -438,16 +438,15 @@ app.delete('/orgfeed', async (req,res)=>{
 
 // GET endpoint to return search results
 app.get('/search', async (req, res) => {
-  const ticket = jwt.verify(req.header('Authorization'), 'sarvasva')
-  var search_string = req.header('search_query')
+  var search_string = req.body.search_query
   var searchKey = new RegExp(search_string, 'i')
   var found_orgs = await organisation.find({ displayName: searchKey})
   var found_users = await User.find({ displayName: searchKey})
-  Array.prototype.push.apply(found_orgs,found_users);
   if (!found_orgs.length)
     res.status(200).send({ "msg": "No Search Results!" })
   else
-    res.status(200).send(found_orgs)
+  console.log({"orgs":found_orgs,"users":found_users})
+    res.status(200).send({"orgs":found_orgs,"users":found_users})
 })
 
 app.get('/feed',async (req,res)=>{
