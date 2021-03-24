@@ -442,11 +442,13 @@ app.get('/search', async (req, res) => {
   var searchKey = new RegExp(search_string, 'i')
   var found_orgs = await organisation.find({ displayName: searchKey})
   var found_users = await User.find({ displayName: searchKey})
-  if (!found_orgs.length)
+  if (!found_orgs.length){
     res.status(200).send({ "msg": "No Search Results!" })
-  else
+  }
+  else{
   console.log({"orgs":found_orgs,"users":found_users})
     res.status(200).send({"orgs":found_orgs,"users":found_users})
+  }
 })
 
 app.get('/feed',async (req,res)=>{
