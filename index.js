@@ -68,7 +68,8 @@ const OrgFeed = require('./models/OrgFeed');
 const pay = require('./models/Pay');
 const Coupon = require('./models/Coupons');
 const applicant = require('./models/applicants');
-const paymentinfo=require('./models/paymentinfo')
+const paymentinfo=require('./models/paymentinfo');
+const Activity = require('./models/Activity');
 //index routes
 /**
  *@swagger
@@ -294,11 +295,14 @@ app.post('/updatepro',async (req,res)=>{
 app.post('/like', async (req,res)=>{
   const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
   var ID=''
+  var name=''
   if(ticket.doc){
-    ID=ticket.doc.UID
+    ID=ticket.doc.UID,
+    name=ticket.doc.displayName
   }
   if(ticket.modprofile){
-    ID=ticket.modprofile.UID
+    ID=ticket.orgprofile.orgId
+    name=ticket.orgprofile.orgName
   }
   var conditions = {
     _id:req.body.id,
@@ -312,16 +316,37 @@ app.post('/like', async (req,res)=>{
     if(doc==null){
       res.status(400).send({"err":"already liked"})
     }else{
-    res.status(200).send({"success":true,"id" : doc._id})
+    var data=''
+    if(req.body.amount){
+      data=`${name} donated ${req.body.amount} through your post ${doc.Title}`
+    }else{
+      data=`${name} liked your post ${doc.Title}`
+    }
+    const newactive = new Activity({
+      person1: ID,
+      perosn2: doc.orgId,
+      data: data,
+      id: doc._id,
+      image: null
+    })
+    newactive.save().then(()=>{
+      res.status(200).send({"success":true,"id" : doc._id})
+    }).catch(()=>{
+      console.log(err)
+      res.status(400).send({"err":"activity not sent or already liked"})
+    })
     }
    }).catch((err)=>{
+      console.log(err)
     res.status(400).send({"err":"feed not found or bad request"})
    })
 })
 
 app.post('/follow', async (req,res)=>{
   const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
+  var name =''
   if(ticket.orgprofile==undefined){
+    name=ticket.doc.displayName
     var conditions = {
       "UID":ticket.doc.UID,
       "following.orgId": {
@@ -335,7 +360,20 @@ app.post('/follow', async (req,res)=>{
       if(doc==null){
         res.status(200).send({"msg":"already followed"})
       }else{
-      res.status(200).send(doc)
+        var data=`${name} started following you`
+        const newactive = new Activity({
+          person1: ticket.doc.UID,
+          perosn2: req.body.orgId,
+          data: data,
+          id: req.body.orgId,
+          image: null
+        })
+        newactive.save().then(()=>{
+          res.status(200).send({"success":true})
+        }).catch(()=>{
+          console.log(err)
+          res.status(400).send({"err":"activity not sent or already followed"})
+        })
       }
     }).catch((err)=>{
      res.status(400).send({"err":err})
@@ -592,6 +630,7 @@ app.post('/coupon', async(req,res)=>{
     res.status(200).send()
   })
 })
+
 app.post('/paymentinfo',async(req,res)=>{
   const newinfo = new paymentinfo({
     orgId: req.body.orgId,
