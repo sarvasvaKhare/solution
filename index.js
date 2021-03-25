@@ -353,13 +353,23 @@ app.post('/follow', async (req,res)=>{
         $ne: req.body.orgId
       }}
       var update = {
-        $addToSet: { following: { orgId: req.body.orgId, orgName: req.body.orgName } }
+        $addToSet: { following: { orgId: req.body.orgId, orgName: req.body.orgName } },
+        $addToSet: { followers: { id:ticket.doc.UID, name: ticket.doc.displayName}}
     }
     
     User.findOneAndUpdate(conditions,update,{new: true}).then((doc)=>{
       if(doc==null){
         res.status(200).send({"msg":"already followed"})
       }else{
+        var conditions = {
+          "orgId":req.body.orgId,
+          "followers.id": {
+            $ne: ticket.doc.UID
+          }}
+          var update = {
+            $addToSet: { followers: { id:ticket.doc.UID, name: ticket.doc.displayName}}
+        }
+        organisation.findOneAndUpdate(conditions,update,{new: true}).then((doc)=>{
         var data=`${name} started following you`
         const newactive = new Activity({
           person1: ticket.doc.UID,
@@ -375,6 +385,7 @@ app.post('/follow', async (req,res)=>{
           console.log(err)
           res.status(400).send({"err":"activity not sent or already followed"})
         })
+      })
       }
     }).catch((err)=>{
      res.status(400).send({"err":err})
@@ -390,13 +401,21 @@ app.post('/follow', async (req,res)=>{
         $addToSet: { following: { orgId: req.body.orgId, orgName: req.body.orgName } }
     }
     organisation.findOneAndUpdate(conditions,update,{new: true}).then((doc)=>{
-      console.log(doc)
+      var conditions = {
+        "orgId":req.body.orgId,
+        "followers.id": {
+          $ne: ticket.orgprofile.orgId
+        }}
+        var update = {
+          $addToSet: { followers: { id:ticket.orgprofile.orgId, name: ticket.orgprofile.orgName}}
+      }
+      organisation.findOneAndUpdate(conditions,update,{new: true})
       if(doc==null){
         res.status(400).send({"msg":"already followed"})
       }else{
         var data=`${name} started following you`
         const newactive = new Activity({
-          person1: ticket.orgprofile.UID,
+          person1: ticket.orgprofile.orgId,
           person2: req.body.orgId,
           data: data,
           id: req.body.orgId,
@@ -668,6 +687,17 @@ app.get('/paymentinfo',async(req,res)=>{
   res.status(200).send(data)
 })
 
+app.get('/activity',async(req,res)=>{
+const ticket= jwt.verify(req.header('Authorization'),'sarvasva');
+var user = ' '
+if(ticket.orgprofile){
+    user=ticket.orgprofile.orgId
+}else{
+    user=ticket.doc.UID
+}
+const result= await Activity.find({person2:user})
+res.status(200).send(result)
+})
 // server up check
 app.listen(port, () => {
   console.log('Server is up on port ' + port)

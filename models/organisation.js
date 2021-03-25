@@ -12,6 +12,10 @@ const organisation = mongoose.model('organisation',
     following:[{
         orgId:{type:String},
         orgName:String
+    }],
+    followers:[{
+        id:{type:String},
+        name:String
     }]
 })
 module.exports = organisation
