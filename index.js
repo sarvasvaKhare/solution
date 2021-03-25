@@ -509,7 +509,7 @@ app.post('/unfollow', async (req,res)=>{
           "orgId":req.body.orgId,
         }
           var update = {
-            $pull: { followers: { id:ticket.orgprofile.orgId, name: ticket.orgprofile.orgName}}
+            $pull: { followers: { id:ticket.doc.UID, name: ticket.doc.displayName}}
         }
         organisation.findOneAndUpdate(conditions,update,{new: true}).then((doc)=>{
           res.status(200).send({"success":true})
