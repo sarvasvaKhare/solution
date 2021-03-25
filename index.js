@@ -91,7 +91,8 @@ app.post('/org', async (req, res) => {
         website: req.body.website,
         number: req.body.number,
         photo: req.body.photo,
-        tagline: req.body.tagline
+        tagline: req.body.tagline,
+        posts: 0
       })
       const mod= new moderator({
         UID: user.uid,                                        // create moderator profile as head of org
@@ -278,8 +279,12 @@ app.post('/orgfeed', async (req,res)=>{
     liked: false
   })
   console.log(post)
-  post.save().then((doc)=>{
-    res.status(200).send(doc)
+  post.save().then(async (doc)=>{
+    const org = await organisation.findOne({orgId:ticket.orgprofile.orgId})
+    org.posts=org.posts+1
+    org.save().then(()=>{
+      res.status(200).send(doc)
+    })
   }).catch((err)=>{
     res.status(400).send({"err":err})
   })}

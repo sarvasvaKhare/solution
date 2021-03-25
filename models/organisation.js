@@ -9,6 +9,7 @@ const organisation = mongoose.model('organisation',
     number:{type:String},
     photo:String,
     tagline:String,
+    posts: Number,
     following:[{
         orgId:{type:String},
         orgName:String
