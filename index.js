@@ -315,7 +315,7 @@ app.post('/like', async (req,res)=>{
     res.status(200).send({"success":true,"id" : doc._id})
     }
    }).catch((err)=>{
-    res.status(400).send({"err":err})
+    res.status(400).send({"err":"feed not found or bad request"})
    })
 })
 
@@ -442,12 +442,7 @@ app.get('/search', async (req, res) => {
   var searchKey = new RegExp(search_string, 'i')
   var found_orgs = await organisation.find({ orgName: searchKey})
   var found_users = await User.find({ displayName: searchKey})
-  if ((!found_orgs.length)&&(!found_users.length)){
-    res.status(200).send({ "msg": "No Search Results!" })
-  }
-  else{
-    res.status(200).send({"orgs":found_orgs,"users":found_users})
-  }
+  res.status(200).send({"orgs":found_orgs,"users":found_users})
 })
 
 app.get('/feed',async (req,res)=>{
