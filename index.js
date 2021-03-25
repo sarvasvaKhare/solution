@@ -324,7 +324,7 @@ app.post('/like', async (req,res)=>{
     }
     const newactive = new Activity({
       person1: ID,
-      perosn2: doc.orgId,
+      person2: doc.orgId,
       data: data,
       id: doc._id,
       image: null
@@ -363,12 +363,13 @@ app.post('/follow', async (req,res)=>{
         var data=`${name} started following you`
         const newactive = new Activity({
           person1: ticket.doc.UID,
-          perosn2: req.body.orgId,
+          person2: req.body.orgId,
           data: data,
           id: req.body.orgId,
           image: null
         })
-        newactive.save().then(()=>{
+        newactive.save().then((doc)=>{
+          console.log(doc)
           res.status(200).send({"success":true})
         }).catch(()=>{
           console.log(err)
@@ -379,6 +380,7 @@ app.post('/follow', async (req,res)=>{
      res.status(400).send({"err":err})
     })
   }else{
+    name=ticket.orgprofile.orgName
     var conditions = {
       "orgId":ticket.orgprofile.orgId,
       "following.orgId": {
@@ -388,12 +390,28 @@ app.post('/follow', async (req,res)=>{
         $addToSet: { following: { orgId: req.body.orgId, orgName: req.body.orgName } }
     }
     organisation.findOneAndUpdate(conditions,update,{new: true}).then((doc)=>{
+      console.log(doc)
       if(doc==null){
         res.status(400).send({"msg":"already followed"})
       }else{
-      res.status(200).send({"success":true})
+        var data=`${name} started following you`
+        const newactive = new Activity({
+          person1: ticket.orgprofile.UID,
+          person2: req.body.orgId,
+          data: data,
+          id: req.body.orgId,
+          image: null
+        })
+        newactive.save().then((doc)=>{
+          console.log(doc)
+          res.status(200).send({"success":true})
+        }).catch(()=>{
+          console.log(err)
+          res.status(400).send({"err":"activity not sent or already followed"})
+        })
       }
     }).catch((err)=>{
+      console.log(err)
      res.status(400).send({"err":err})
     })
   }
@@ -476,7 +494,7 @@ app.delete('/orgfeed', async (req,res)=>{
 
 // GET endpoint to return search results
 app.get('/search', async (req, res) => {
-  var search_string = req.body.search_query
+  var search_string = req.query.search_query
   var searchKey = new RegExp(search_string, 'i')
   var found_orgs = await organisation.find({ orgName: searchKey})
   var found_users = await User.find({ displayName: searchKey})
