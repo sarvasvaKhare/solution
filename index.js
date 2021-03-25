@@ -10,13 +10,12 @@ function getRndInteger(min, max) {
 
 // firebase admin
 var admin = require("firebase-admin");
-
 var serviceAccount = require("./socialgoal-e4d3d-firebase-adminsdk-ada12-3d018848f6.json");
-
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
   databaseURL: "https://socialgoal-e4d3d-default-rtdb.firebaseio.com"
 });
+
 // swagger docs
 const swaggerJsDocs = require('swagger-jsdoc')
 const swaggerUi = require('swagger-ui-express')
@@ -33,9 +32,9 @@ const swaggerOptions = {
   },
   apis: ['index.js']
 }
-
 const swaggerDocs = swaggerJsDocs(swaggerOptions);
 app.use('/api-docs',swaggerUi.serve,swaggerUi.setup(swaggerDocs));
+
 //setting up cors for inter-domain requests
 var cors = require('cors')
 app.use(cors())
@@ -43,6 +42,8 @@ app.use(cors())
 //setting up body parser to parse req into body
 var bodyParser = require('body-parser')
 app.use(bodyParser.json());
+
+//jwt- token and password
 var jwt = require('jsonwebtoken');
 var generator = require('generate-password');
 
@@ -62,7 +63,6 @@ db.once('open', function () {
 // model schema
 const organisation=require('./models/organisation')
 const moderator=require('./models/moderators');
-const { request } = require('express');
 const User = require('./models/User');
 const OrgFeed = require('./models/OrgFeed');
 const pay = require('./models/Pay');
@@ -70,28 +70,20 @@ const Coupon = require('./models/Coupons');
 const applicant = require('./models/applicants');
 const paymentinfo=require('./models/paymentinfo');
 const Activity = require('./models/Activity');
-//index routes
-/**
- *@swagger
- *  /memes:
- *  get:
- *    description: Use to fetch latest 100 memes
- *    responses:
- *      '200':
- *        description: A succesfull response with memes
- *      '404':
- *        description: A failed response with no memes :(
- */
+
+//app routes
+
+// organisation registration route
 app.post('/org', async (req, res) => { 
-  try {await admin.auth().createUser({
+  try {await admin.auth().createUser({                  //verify ID-TOKEN from Firebase
     email: req.body.email,
     emailverified: false,
     password: req.body.password
   }).then((user)=>{
     console.log(user)
-      organisation.estimatedDocumentCount().then((num)=>{
-      const neworg= new organisation({
-        UID: user.uid,
+      organisation.estimatedDocumentCount().then((num)=>{     //create 
+      const neworg= new organisation({                        // new Org
+        UID: user.uid,                                        // in mongodb
         orgName: req.body.orgName,
         displayName: req.body.displayName,
         orgId: num||0,
@@ -102,25 +94,25 @@ app.post('/org', async (req, res) => {
         tagline: req.body.tagline
       })
       const mod= new moderator({
-        UID: user.uid,
+        UID: user.uid,                                        // create moderator profile as head of org
         email: user.email,
         orgId: num||0,
         access: 'HEAD'
       })
-       organisation.findOne(neworg).then((doc)=>{
-        if(!doc){
-          moderator.findOne(mod).then((doc)=>{
+       organisation.findOne(neworg).then((doc)=>{             // search for duplicate org
+        if(!doc){                                     
+          moderator.findOne(mod).then((doc)=>{               // search for dupilacte moderator
             if(!doc){
-                mod.save().then((file)=>{
+                mod.save().then((file)=>{                   // if no duplicate save new org and mod profile
                   neworg.save().then((doc)=>{
-                    const token = jwt.sign({"modprofile":file,"orgprofile":doc}, 'sarvasva')
+                    const token = jwt.sign({"modprofile":file,"orgprofile":doc}, 'sarvasva')  // create JWT token
                     res.status(200).send({"jwt":token,"modprofile":file,"orgprofile":doc})
                 }).catch((err)=>{
-                  admin.auth().deleteUser(user.uid).then(() => {console.log({"msg":"Successfully deleted user"})
+                  admin.auth().deleteUser(user.uid).then(() => {console.log({"msg":"Successfully deleted user"})  //if failure 
                   res.status(400).send(err)}).catch((error) => {console.log(error);});
                 })
-                }).catch((err)=>{
-                admin.auth().deleteUser(user.uid).then(() => {console.log({"msg":"Successfully deleted user"})
+                }).catch((err)=>{                                                                               //delete from
+                admin.auth().deleteUser(user.uid).then(() => {console.log({"msg":"Successfully deleted user"}) // firebase
                 res.status(400).send(err)})
                 .catch((error) => {console.log(error);});
               })  
@@ -163,27 +155,25 @@ app.post('/org', async (req, res) => {
 
 app.post('/mod',async (req,res)=>{
   try
-  {const token =jwt.verify(req.header('Authorization'),'sarvasva')
+  {const token =jwt.verify(req.header('Authorization'),'sarvasva')  // verify access of the person adding mod if correct
   console.log(token)
-  var password =  generator.generate({
+  var password =  generator.generate({                    //genrate random password
     length: 8,
     numbers: true
   })
-  await admin.auth().createUser({
-    email: req.body.email,
+  await admin.auth().createUser({                       // create new user with email provided
+    email: req.body.email,                              // in firebase
     emailverified: false,
     password: password
   }).then((user)=>{
-    const mod= new moderator({
+      const mod= new moderator({                        // add new moderator in moderator table in mongodb
       UID: user.uid,
       email: user.email,
       orgId: token.orgprofile.orgId,
       access: req.body.access||'MOD'
     })
     mod.save().then(async (doc)=>{
-      const file = await organisation.findOne({orgId:doc.orgId})
-        const token = jwt.sign({"modprofile":doc,"orgprofile":file}, 'sarvasva')
-        res.status(200).send({"jwt":token,"modprofile":doc,"orgprofile":file})
+        res.status(200).send({"success":true})    // return sucess if mod added
     }).catch((err)=>{
       admin.auth().deleteUser(user.uid).then(()=>{
         res.status(404).send({"err":err})
@@ -199,10 +189,10 @@ app.post('/mod',async (req,res)=>{
 
 app.post('/add',async(req,res)=>{
   try
-  {await admin.auth().verifyIdToken(req.header('Authorization')).then(async (token)=>{
-       const doc= await User.findOne({UID:token.uid})
+  {await admin.auth().verifyIdToken(req.header('Authorization')).then(async (token)=>{ // verify ID-token
+       const doc= await User.findOne({UID:token.uid})               // check if user already exists in database
       if(!doc){
-      const newUser= new User({
+      const newUser= new User({                                 // if not create new user
         UID:token.uid,
         email:token.email,
         displayName:token.name,
@@ -211,14 +201,14 @@ app.post('/add',async(req,res)=>{
         points:0
       })
       newUser.save().then((doc)=>{
-        var token = jwt.sign({doc}, 'sarvasva')
+        var token = jwt.sign({doc}, 'sarvasva')              // save and give jwt
         console.log(doc)
         res.status(200).send({"jwt":token,"profile":doc})
       }).catch((err)=>{
         res.status(400).send(err)
       })
     }else{
-      var token = jwt.sign({doc}, 'sarvasva')
+      var token = jwt.sign({doc}, 'sarvasva')               // if user exist create jwt and send
       res.status(200).send({"jwt":token,"profile":doc})
     }
     }).catch((err)=>{
@@ -230,12 +220,12 @@ app.post('/add',async(req,res)=>{
     }
 })
 
-app.get('/login',async (req,res)=>{
+app.get('/login',async (req,res)=>{                         // org login route
     try{
-      const token = await admin.auth().verifyIdToken(req.header('Authorization'))
+      const token = await admin.auth().verifyIdToken(req.header('Authorization')) // verify Id-token
       console.log(token)
-      const doc = await moderator.findOne({UID:token.uid})
-        const file = await organisation.findOne({orgId:doc.orgId})
+      const doc = await moderator.findOne({UID:token.uid})                // search for orgprofile
+        const file = await organisation.findOne({orgId:doc.orgId})        // and modprofile and create jwt to send
         const ticket = jwt.sign({"modprofile":doc,"orgprofile":file}, 'sarvasva')
         res.status(200).send({"jwt":ticket,"modprofile":doc,"orgprofile":file})
     } catch(err){
@@ -245,7 +235,7 @@ app.get('/login',async (req,res)=>{
 })
 
 app.post('/orgname',async (req,res)=>{
-  try {organisation.findOne({orgName:req.body.orgName}).then((doc)=>{
+  try {organisation.findOne({orgName:req.body.orgName}).then((doc)=>{     // check for duplicate orgName
     if(doc){
       res.status(200).send({"taken":true})
     }else{
@@ -259,7 +249,7 @@ app.post('/orgname',async (req,res)=>{
 })
 
 app.get('/orgfeed', async (req,res)=>{
-  try {const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
+  try {const ticket= jwt.verify(req.header('Authorization'),'sarvasva')   
   const posts= await OrgFeed.find({orgId:ticket.orgprofile.orgId}).sort({created_at:-1})
   console.log(posts)
   res.status(200).send(posts)  }
