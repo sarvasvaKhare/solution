@@ -301,7 +301,7 @@ app.post('/like', async (req,res)=>{
     name=ticket.doc.displayName
   }
   if(ticket.modprofile){
-    ID=ticket.orgprofile.orgId
+    ID=ticket.orgprofile.UID
     name=ticket.orgprofile.orgName
   }
   var conditions = {
@@ -406,7 +406,7 @@ app.post('/unlike', async(req,res)=>{
     ID=ticket.doc.UID
   }
   if(ticket.modprofile){
-    ID=ticket.modprofile.UID
+    ID=ticket.orgprofile.UID
   }
   var conditions = {
     _id:req.body.id
