@@ -754,6 +754,7 @@ app.post('/coupon', async(req,res)=>{
 app.post('/paymentinfo',async(req,res)=>{
  try { 
   const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
+  if(ticket.orgprofile){
    const newinfo = new paymentinfo({
     orgId: ticket.orgprofile.orgId,
     google : {
@@ -764,7 +765,11 @@ app.post('/paymentinfo',async(req,res)=>{
   newinfo.save().then((doc)=>{
     console.log(doc)
     res.status(200).send({"success":true})
-  })} catch(err){
+  })}
+  else{
+    res.status(400).send({"err":"unauthorized"})
+  }
+} catch(err){
     console.log(err)
     res.status(400).send({"err":"Server Error"})
   }
