@@ -752,8 +752,10 @@ app.post('/coupon', async(req,res)=>{
 })
 
 app.post('/paymentinfo',async(req,res)=>{
- try { const newinfo = new paymentinfo({
-    orgId: req.body.orgId,
+ try { 
+  const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
+   const newinfo = new paymentinfo({
+    orgId: ticket.orgprofile.orgId,
     google : {
       upiId: req.body.upiId,
       merchantName:req.body.merchantName
