@@ -83,7 +83,7 @@ const Activity = require('./models/Activity');
  *        description: A failed response with no memes :(
  */
 app.post('/org', async (req, res) => { 
-  await admin.auth().createUser({
+  try {await admin.auth().createUser({
     email: req.body.email,
     emailverified: false,
     password: req.body.password
@@ -155,11 +155,15 @@ app.post('/org', async (req, res) => {
 }).catch((err)=>{
   console.log(err)
   res.status(400).send({"err":err})
-})
+})} catch(err){
+    console.log(err)
+    res.status(400).send({"err":"server err"})
+}
 })                          
 
 app.post('/mod',async (req,res)=>{
-  const token =jwt.verify(req.header('Authorization'),'sarvasva')
+  try
+  {const token =jwt.verify(req.header('Authorization'),'sarvasva')
   console.log(token)
   var password =  generator.generate({
     length: 8,
@@ -187,11 +191,15 @@ app.post('/mod',async (req,res)=>{
     })
   }).catch((err)=>{
         res.status(400).send({"err":err})
-  })
+  })} catch(err){
+    console.log(err)
+    res.status(400).send({"err":"server error"})
+  }
 })
 
 app.post('/add',async(req,res)=>{
-  await admin.auth().verifyIdToken(req.header('Authorization')).then(async (token)=>{
+  try
+  {await admin.auth().verifyIdToken(req.header('Authorization')).then(async (token)=>{
        const doc= await User.findOne({UID:token.uid})
       if(!doc){
       const newUser= new User({
@@ -215,7 +223,11 @@ app.post('/add',async(req,res)=>{
     }
     }).catch((err)=>{
       res.status(400).send({"err":err})
-    })
+    })}
+    catch(err){
+      console.log(err)
+      res.status(400).send({"err":err})
+    }
 })
 
 app.get('/login',async (req,res)=>{
@@ -233,24 +245,32 @@ app.get('/login',async (req,res)=>{
 })
 
 app.post('/orgname',async (req,res)=>{
-  organisation.findOne({orgName:req.body.orgName}).then((doc)=>{
+  try {organisation.findOne({orgName:req.body.orgName}).then((doc)=>{
     if(doc){
       res.status(200).send({"taken":true})
     }else{
       res.status(200).send({"taken":false})
     }
-  })
+  })}
+  catch(err){
+    console.log(err)
+    res.status(200).send({"err":"server error"})
+  }
 })
 
 app.get('/orgfeed', async (req,res)=>{
-  const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
+  try {const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
   const posts= await OrgFeed.find({orgId:ticket.orgprofile.orgId}).sort({created_at:-1})
   console.log(posts)
-  res.status(200).send(posts)  
+  res.status(200).send(posts)  }
+  catch(err){
+    console.log(err)
+  }
 })
 
 app.post('/orgfeed', async (req,res)=>{
-  const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
+  try
+  {const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
   console.log(ticket.orgprofile.orgId)
   const post = new OrgFeed({
     Type: req.body.Type,
@@ -272,11 +292,15 @@ app.post('/orgfeed', async (req,res)=>{
     res.status(200).send(doc)
   }).catch((err)=>{
     res.status(400).send({"err":err})
-  })
+  })}
+  catch(err){
+    console.log(err),
+    res.status(400).send({"err":"server error"})
+  }
 })
 
 app.post('/updatepro',async (req,res)=>{
-  const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
+ try { const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
   const ID=ticket.orgprofile.orgId
   if(ID){
     const file = await organisation.updateOne({orgId:ID},{
@@ -289,11 +313,14 @@ app.post('/updatepro',async (req,res)=>{
     })
     res.status(200).send(file)
   }
-  
+  } catch(err){
+    console.log(err)
+    res.status(400).send({"err":"server error"})
+  }
 })
 
 app.post('/like', async (req,res)=>{
-  const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
+ try {const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
   var ID=''
   var name=''
   if(ticket.doc){
@@ -339,11 +366,15 @@ app.post('/like', async (req,res)=>{
    }).catch((err)=>{
       console.log(err)
     res.status(400).send({"err":"feed not found or bad request"})
-   })
+   })}
+   catch(err){
+     console.log(err)
+     res.status(400).send(err)
+   }
 })
 
 app.post('/follow', async (req,res)=>{
-  const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
+  try {const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
   var name =''
   if(ticket.orgprofile==undefined){
     name=ticket.doc.displayName
@@ -409,7 +440,7 @@ app.post('/follow', async (req,res)=>{
         var update = {
           $addToSet: { followers: { id:ticket.orgprofile.orgId, name: ticket.orgprofile.orgName}}
       }
-      organisation.findOneAndUpdate(conditions,update,{new: true})
+      organisation.findOneAndUpdate(conditions,update,{new: true}).then(()=>{
       if(doc==null){
         res.status(400).send({"msg":"already followed"})
       }else{
@@ -424,20 +455,24 @@ app.post('/follow', async (req,res)=>{
         newactive.save().then((doc)=>{
           console.log(doc)
           res.status(200).send({"success":true})
-        }).catch(()=>{
+        }).catch((err)=>{
           console.log(err)
           res.status(400).send({"err":"activity not sent or already followed"})
         })
       }
+    })
     }).catch((err)=>{
       console.log(err)
      res.status(400).send({"err":err})
     })
+  }} catch(err){
+      console.log(err)
+      res.status(400).send({"err":"server error"})
   }
 })
 
 app.post('/unlike', async(req,res)=>{
-  const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
+  try {const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
   var ID=''
   if(ticket.doc){
     ID=ticket.doc.UID
@@ -460,11 +495,14 @@ app.post('/unlike', async(req,res)=>{
     }
    }).catch((err)=>{
     res.status(400).send({"err":err})
-   })
+   })} catch(err){
+     console.log(err)
+     res.status(400).send({"err":"server error"})
+   }
 })
 
 app.post('/unfollow', async (req,res)=>{
-  const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
+  try {const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
   if(ticket.orgprofile==undefined){
     var conditions = {
       "UID":ticket.doc.UID
@@ -477,7 +515,15 @@ app.post('/unfollow', async (req,res)=>{
       if(doc==null){
         res.status(400).send({"msg":"already followed"})
       }else{
-      res.status(200).send({"success":true})
+        var conditions = {
+          "orgId":req.body.orgId,
+        }
+          var update = {
+            $pull: { followers: { id:ticket.orgprofile.orgId, name: ticket.orgprofile.orgName}}
+        }
+        organisation.findOneAndUpdate(conditions,update,{new: true}).then((doc)=>{
+          res.status(200).send({"success":true})
+        })
       }
     }).catch((err)=>{
      res.status(400).send({"err":err})
@@ -493,35 +539,53 @@ app.post('/unfollow', async (req,res)=>{
       if(doc==null){
         res.status(200).send({"msg":"already followed"})
       }else{
-      res.status(200).send(doc)
+        var conditions = {
+          "orgId":req.body.orgId,
+        }
+          var update = {
+            $pull: { followers: { id:ticket.orgprofile.orgId, name: ticket.orgprofile.orgName}}
+        }
+        organisation.findOneAndUpdate(conditions,update,{new: true}).then(()=>{
+          res.status(200).send({"success":true})
+        })
       }
     }).catch((err)=>{
      res.status(400).send({"err":err})
     })
+  }} catch(err){
+    console.log(err)
+    res.status(400).send({"err":"Server error"})
   }
 })
 
 app.delete('/orgfeed', async (req,res)=>{
-  const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
+  try {const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
   const posts= await OrgFeed.findOneAndDelete({orgId:ticket.orgprofile.orgId})
   if(posts==null){
     res.status(404).send({"msg":"not found"})
   }else{
     res.status(200).send({"success":true})
+  }} catch(err) {
+    console.log(err)
+    res.status(400).send({"err":"Server error"})
   }
 })
 
 // GET endpoint to return search results
 app.get('/search', async (req, res) => {
-  var search_string = req.query.search_query
+ try {var search_string = req.query.search_query
   var searchKey = new RegExp(search_string, 'i')
   var found_orgs = await organisation.find({ orgName: searchKey})
   var found_users = await User.find({ displayName: searchKey})
-  res.status(200).send({"orgs":found_orgs,"users":found_users})
+  res.status(200).send({"orgs":found_orgs,"users":found_users})}
+  catch(err) {
+    console.log(err);
+    res.status(400).send(err)
+  }
 })
 
 app.get('/feed',async (req,res)=>{
-  if(req.header('Authorization')){
+  try {if(req.header('Authorization')){
   const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
   var posts=[]
   var ID='';
@@ -567,26 +631,37 @@ app.get('/feed',async (req,res)=>{
   console.log(posts)
   res.status(200).send(posts)
 }
+  } catch(err){
+    console.log(err)
+    res.status(400).send({"err":"server error"})
+  }
 })
 
 app.get('/profile', async (req,res)=>{
-  const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
+ try { const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
   const ID=ticket.orgprofile.orgId
   if(ID){
     const file = await organisation.findOne({orgId:ID})
     res.status(200).send(file)
+  }} catch(err) {
+    console.log(err)
+    res.status(400).send({"err":"Server Error"})
   }
 })
 
 app.get('/mods',async (req,res)=>{
-  const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
+  try {const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
   const ID=ticket.orgprofile.orgId
   const file = await moderator.find({orgId:ID})
-  res.status(200).send(file)
+  res.status(200).send(file)}
+  catch(err){
+    console.log(err)
+    res.status(400).send({"err":"server err"})
+  }
 })
 
 app.post('/payment',async (req,res)=>{
-  const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
+  try {const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
   const newpayment = new pay({
     UID: ticket.doc.UID,
     OrgId: req.body.orgId,
@@ -614,16 +689,20 @@ app.post('/payment',async (req,res)=>{
       res.status(200).send({"success":true,"coupon":getCP})
   }).catch((err)=>{
     console.log(err)
-    res.status(400).send({"msg":"points error"})
+    res.status(400).send({"err":"points error"})
     })
   }).catch((err)=>{
     console.log(err)
-    res.status(400).send({"msg":"error in payment addition"})
-  })
+    res.status(400).send({"err":"error in payment addition"})
+  })}
+  catch(err){
+    console.log(err);
+    res.status(400).send({"err":"Server Error"})
+  }
 })
 
 app.post('/application', async (req,res)=>{
-  const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
+  try {const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
   if(ticket.doc){
     const newapplicant = new applicant({
       email:ticket.doc.email,
@@ -635,28 +714,39 @@ app.post('/application', async (req,res)=>{
       res.status(200).send({"success":true})
     }).catch((err)=>{
       console.log(err)
-      res.status(400).send({"msg":"error"})
+      res.status(400).send({"err":"error"})
     })
   }else{
     res.status(400).send({"msg":"you are already a mod"})
+  }} catch(err){
+    console.log(err)
+    res.status(400).send({"err":"Server error"})
   }
 })
 
 app.get('/application', async (req,res)=>{
-  const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
+  try {const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
   console.log(ticket.orgprofile.orgId)
   const applicants = await applicant.find({orgId:ticket.orgprofile.orgId})
-  res.status(200).send(applicants)
+  res.status(200).send(applicants)}
+  catch(err){
+    console.log(err)
+    res.status(400).send({"err":"Server error"})
+  }
 })
 
 app.post('/reject', async (req,res)=>{
-  const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
+  try {const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
   const applicants = await applicant.findOneAndDelete({email:req.body.email})
-  res.status(200).send({"success":true})
+  res.status(200).send({"success":true})}
+  catch(err){
+    console.log(err)
+    res.status(400).send({"err":"Server Error"})
+  }
 })
 
 app.post('/coupon', async(req,res)=>{
-  const newcp= new Coupon({
+  try {const newcp= new Coupon({
     text: req.body.text,
     code: req.body.code,
     name: req.body.name,
@@ -665,11 +755,14 @@ app.post('/coupon', async(req,res)=>{
   })
   newcp.save().then(()=>{
     res.status(200).send()
-  })
+  })} catch(err){
+    console.log(err)
+    res.status(400).send({"err":"Server error"})
+  }
 })
 
 app.post('/paymentinfo',async(req,res)=>{
-  const newinfo = new paymentinfo({
+ try { const newinfo = new paymentinfo({
     orgId: req.body.orgId,
     google : {
       upiId: req.body.upiId,
@@ -679,16 +772,24 @@ app.post('/paymentinfo',async(req,res)=>{
   newinfo.save().then((doc)=>{
     console.log(doc)
     res.status(200).send({"success":true})
-  })
+  })} catch(err){
+    console.log(err)
+    res.status(400).send({"err":"Server Error"})
+  }
 })
 
 app.get('/paymentinfo',async(req,res)=>{
-  let data = await paymentinfo.findOne({orgId:req.body.orgId});
-  res.status(200).send(data)
+  try {
+    let data = await paymentinfo.findOne({orgId:req.body.orgId});
+  res.status(200).send(data)} 
+  catch(err){
+    console.log(err);
+    res.status(400).send({"err":"Server error"})
+  }
 })
 
 app.get('/activity',async(req,res)=>{
-const ticket= jwt.verify(req.header('Authorization'),'sarvasva');
+try {const ticket= jwt.verify(req.header('Authorization'),'sarvasva');
 var user = ' '
 if(ticket.orgprofile){
     user=ticket.orgprofile.orgId
@@ -696,7 +797,10 @@ if(ticket.orgprofile){
     user=ticket.doc.UID
 }
 const result= await Activity.find({person2:user})
-res.status(200).send(result)
+res.status(200).send(result)} catch(err){
+  console.log(err)
+  res.status(400).send({"err":"Server error"})
+}
 })
 // server up check
 app.listen(port, () => {
