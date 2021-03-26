@@ -421,15 +421,15 @@ app.post('/follow', async (req,res)=>{
      res.status(400).send({"err":"server error"})
     })
   }else{
+    if(ticket.orgprofile.orgId==req.body.orgId){
+      res.status(400).send({"err":"you cant follow yourself"})
+    }else{
     name=ticket.orgprofile.orgName
     var conditions = {
       "orgId":ticket.orgprofile.orgId,
       "following.orgId": {
         $ne: req.body.orgId
       }}
-    if(ticket.orgprofile.orgId==req.body.orgId){
-      res.status(400).send({"err":"you cant follow yourself"})
-    }
     var update = {
         $addToSet: { following: { orgId: req.body.orgId, orgName: req.body.orgName } }
     }
@@ -467,6 +467,7 @@ app.post('/follow', async (req,res)=>{
       console.log(err)
      res.status(400).send({"err":"error in following"})
     })
+  }
   }} catch(err){
       console.log(err)
       res.status(400).send({"err":"server error"})
