@@ -413,7 +413,7 @@ app.post('/follow', async (req,res)=>{
           res.status(200).send({"success":true})
         }).catch((err)=>{
           console.log(err)
-          res.status(200).send({"success":true})
+          res.status(200).send({"success":false})
         })
       })
       }
