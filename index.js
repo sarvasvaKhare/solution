@@ -764,13 +764,9 @@ app.post('/paymentinfo',async(req,res)=>{
  try { 
   const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
   if(ticket.orgprofile){
-   const newinfo = new paymentinfo({
-    orgId: ticket.orgprofile.orgId,
-    google : {
-      upiId: req.body.upiId,
-      merchantName:req.body.merchantName
-    }
-  })
+   const newinfo = await organisation.findOne({orgId:ticket.orgprofile.OrgId})
+   newinfo.google.upiId=req.body.upiId,
+   newinfo.google.merchantName=req.body.merchantName
   newinfo.save().then((doc)=>{
     console.log(doc)
     res.status(200).send({"success":true})
