@@ -427,6 +427,9 @@ app.post('/follow', async (req,res)=>{
       "following.orgId": {
         $ne: req.body.orgId
       }}
+    if(ticket.orgprofile.orgId==req.body.orgId){
+      res.status(400).send({"err":"you cant follow yourself"})
+    }
     var update = {
         $addToSet: { following: { orgId: req.body.orgId, orgName: req.body.orgName } }
     }
