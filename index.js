@@ -786,7 +786,7 @@ app.post('/paymentinfo',async(req,res)=>{
 
 app.get('/paymentinfo',async(req,res)=>{
   try {
-    let data = await paymentinfo.findOne({orgId:req.query.orgId});
+    let data = await organisation.findOne({orgId:req.query.orgId},'orgId google');
   res.status(200).send(data)} 
   catch(err){
     console.log(err);
