@@ -413,7 +413,7 @@ app.post('/follow', async (req,res)=>{
           res.status(200).send({"success":true})
         }).catch((err)=>{
           console.log(err)
-          res.status(200).send({"success":false})
+          res.status(200).send({"success":true})
         })
       })
       }
@@ -422,7 +422,7 @@ app.post('/follow', async (req,res)=>{
     })
   }else{
     if(ticket.orgprofile.orgId==req.body.orgId){
-      res.status(400).send({"err":"you cant follow yourself"})
+      res.status(400).send({"success":false})
     }else{
     name=ticket.orgprofile.orgName
     var conditions = {
