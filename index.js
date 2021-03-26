@@ -68,7 +68,7 @@ const OrgFeed = require('./models/OrgFeed');
 const pay = require('./models/Pay');
 const Coupon = require('./models/Coupons');
 const applicant = require('./models/applicants');
-const paymentinfo=require('./models/paymentinfo');
+// const paymentinfo=require('./models/paymentinfo');
 const Activity = require('./models/Activity');
 
 //app routes
@@ -92,6 +92,10 @@ app.post('/org', async (req, res) => {
         number: req.body.number,
         photo: req.body.photo,
         tagline: req.body.tagline,
+        google:{
+          upiId: req.body.upiId||"Ayush@upi",
+          merchantName: req.body.merchantName||"Ayush Suman"
+        },
         posts: 0
       })
       const mod= new moderator({
@@ -110,29 +114,29 @@ app.post('/org', async (req, res) => {
                     res.status(200).send({"jwt":token,"modprofile":file,"orgprofile":doc})
                 }).catch((err)=>{
                   admin.auth().deleteUser(user.uid).then(() => {console.log({"msg":"Successfully deleted user"})  //if failure 
-                  res.status(400).send(err)}).catch((error) => {console.log(error);});
+                  res.status(400).send({"err":"cant create new org"})}).catch((error) => {console.log(error);});
                 })
                 }).catch((err)=>{                                                                               //delete from
                 admin.auth().deleteUser(user.uid).then(() => {console.log({"msg":"Successfully deleted user"}) // firebase
-                res.status(400).send(err)})
+                res.status(400).send({"err":"cant create new org"})})
                 .catch((error) => {console.log(error);});
               })  
             }else{
               admin.auth().deleteUser(user.uid).then(() => {
                 console.log({"msg":"Successfully deleted user"})
-                res.status(400).send({"msg":"duplicate file in mod database"})
+                res.status(400).send({"err":"duplicate file in mod database"})
             }).catch((error) => {console.log(error);});
             }
           }).catch((err)=>{
             console.log(err)
             admin.auth().deleteUser(user.uid).then(() => {console.log({"msg":"Successfully deleted user"})
-            res.status(400).send(err)})
+            res.status(400).send({"err":"cant create new org"})})
             .catch((error) => {console.log(error);});
           })
         }else{
           admin.auth().deleteUser(user.uid).then(() => {
           console.log({"msg":"Successfully deleted user"})
-          res.status(400).send({"msg":"duplicate file in org database"})}).
+          res.status(400).send({"err":"duplicate file in org database"})}).
           catch((error) => {console.log(error);});
         }
       }).catch((err)=>{
@@ -143,11 +147,11 @@ app.post('/org', async (req, res) => {
       })
   }).catch((err)=>{
     console.log(err)
-    res.status(400).send({"err":err})
+    res.status(400).send({"err":"no estimated count"})
   })
 }).catch((err)=>{
   console.log(err)
-  res.status(400).send({"err":err})
+  res.status(400).send({"err":"error in connecting mongo"})
 })} catch(err){
     console.log(err)
     res.status(400).send({"err":"server err"})
@@ -177,11 +181,11 @@ app.post('/mod',async (req,res)=>{
         res.status(200).send({"success":true})    // return sucess if mod added
     }).catch((err)=>{
       admin.auth().deleteUser(user.uid).then(()=>{
-        res.status(404).send({"err":err})
+        res.status(404).send({"err":"duplicate moderator"})
       })
     })
   }).catch((err)=>{
-        res.status(400).send({"err":err})
+        res.status(400).send({"err":"error in saving moderator"})
   })} catch(err){
     console.log(err)
     res.status(400).send({"err":"server error"})
@@ -206,18 +210,18 @@ app.post('/add',async(req,res)=>{
         console.log(doc)
         res.status(200).send({"jwt":token,"profile":doc})
       }).catch((err)=>{
-        res.status(400).send(err)
+        res.status(400).send({"err":"login error"})
       })
     }else{
       var token = jwt.sign({doc}, 'sarvasva')               // if user exist create jwt and send
       res.status(200).send({"jwt":token,"profile":doc})
     }
     }).catch((err)=>{
-      res.status(400).send({"err":err})
+      res.status(400).send({"err":"login error"})
     })}
     catch(err){
       console.log(err)
-      res.status(400).send({"err":err})
+      res.status(400).send({"err":"server error"})
     }
 })
 
@@ -231,7 +235,7 @@ app.get('/login',async (req,res)=>{                         // org login route
         res.status(200).send({"jwt":ticket,"modprofile":doc,"orgprofile":file})
     } catch(err){
       console.log(err)
-      res.status(403).send({"err":err})
+      res.status(403).send({"err":"server error"})
     }
 })
 
@@ -286,7 +290,7 @@ app.post('/orgfeed', async (req,res)=>{
       res.status(200).send(doc)
     })
   }).catch((err)=>{
-    res.status(400).send({"err":err})
+    res.status(400).send({"err":"cant save post"})
   })}
   catch(err){
     console.log(err),
@@ -355,7 +359,7 @@ app.post('/like', async (req,res)=>{
       res.status(200).send({"success":true,"id" : doc._id})
     }).catch((err)=>{
       console.log(err)
-      res.status(400).send({"err":"activity not sent or already liked"})
+      res.status(200).send({"success":true,"id" : doc._id})
     })
     }
    }).catch((err)=>{
@@ -364,7 +368,7 @@ app.post('/like', async (req,res)=>{
    })}
    catch(err){
      console.log(err)
-     res.status(400).send(err)
+     res.status(400).send({"err":"server error"})
    }
 })
 
@@ -414,7 +418,7 @@ app.post('/follow', async (req,res)=>{
       })
       }
     }).catch((err)=>{
-     res.status(400).send({"err":err})
+     res.status(400).send({"err":"server error"})
     })
   }else{
     name=ticket.orgprofile.orgName
@@ -458,7 +462,7 @@ app.post('/follow', async (req,res)=>{
     })
     }).catch((err)=>{
       console.log(err)
-     res.status(400).send({"err":err})
+     res.status(400).send({"err":"error in following"})
     })
   }} catch(err){
       console.log(err)
@@ -489,7 +493,7 @@ app.post('/unlike', async(req,res)=>{
     res.status(200).send({"success":true,"id":doc._id})
     }
    }).catch((err)=>{
-    res.status(400).send({"err":err})
+    res.status(400).send({"err":"err in orgfeed"})
    })} catch(err){
      console.log(err)
      res.status(400).send({"err":"server error"})
@@ -521,7 +525,7 @@ app.post('/unfollow', async (req,res)=>{
         })
       }
     }).catch((err)=>{
-     res.status(400).send({"err":err})
+     res.status(400).send({"err":"err in unfollow"})
     })
   }else{
     var conditions = {
@@ -545,7 +549,7 @@ app.post('/unfollow', async (req,res)=>{
         })
       }
     }).catch((err)=>{
-     res.status(400).send({"err":err})
+     res.status(400).send({"err":"err in unfollow"})
     })
   }} catch(err){
     console.log(err)
@@ -557,7 +561,7 @@ app.delete('/orgfeed', async (req,res)=>{
   try {const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
   const posts= await OrgFeed.findOneAndDelete({orgId:ticket.orgprofile.orgId})
   if(posts==null){
-    res.status(404).send({"msg":"not found"})
+    res.status(400).send({"err":"not found"})
   }else{
     res.status(200).send({"success":true})
   }} catch(err) {
@@ -575,7 +579,7 @@ app.get('/search', async (req, res) => {
   res.status(200).send({"orgs":found_orgs,"users":found_users})}
   catch(err) {
     console.log(err);
-    res.status(400).send(err)
+    res.status(400).send({"err":"server error"})
   }
 })
 
@@ -712,7 +716,7 @@ app.post('/application', async (req,res)=>{
       res.status(400).send({"err":"error"})
     })
   }else{
-    res.status(400).send({"msg":"you are already a mod"})
+    res.status(400).send({"err":"you are already a mod"})
   }} catch(err){
     console.log(err)
     res.status(400).send({"err":"Server error"})

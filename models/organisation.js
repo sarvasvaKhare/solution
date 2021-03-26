@@ -10,6 +10,10 @@ const organisation = mongoose.model('organisation',
     photo:String,
     tagline:String,
     posts: Number,
+    google:{
+        upiId: String,
+        merchantName: String
+    },
     following:[{
         orgId:{type:String},
         orgName:String
