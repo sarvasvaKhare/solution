@@ -151,7 +151,7 @@ app.post('/org', async (req, res) => {
   })
 }).catch((err)=>{
   console.log(err)
-  res.status(400).send({"err":"error in connecting mongo"})
+  res.status(400).send({"err":err.errorInfo.message})
 })} catch(err){
     console.log(err)
     res.status(400).send({"err":"server err"})
