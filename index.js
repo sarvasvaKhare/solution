@@ -667,7 +667,7 @@ app.post('/payment',async (req,res)=>{
   try {const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
   const newpayment = new pay({
     UID: ticket.doc.UID,
-    OrgId: req.body.orgId,
+    orgId: req.body.orgId,
     amount: req.body.amount,
     id: req.body.id
   })

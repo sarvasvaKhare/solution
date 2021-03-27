@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const paySchema = new mongoose.Schema({
     UID: String,
-    OrgId:String,
+    orgId:String,
     amount:Number,
     id: String,
 })
