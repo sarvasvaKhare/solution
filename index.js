@@ -770,8 +770,8 @@ app.post('/paymentinfo',async(req,res)=>{
   if(ticket.orgprofile){
    const newinfo = await organisation.findOne({orgId:ticket.orgprofile.orgId},'google')
    console.log(newinfo)
-   newinfo.upiId=req.body.upiId,
-   newinfo.merchantName=req.body.merchantName
+   newinfo.google.upiId=req.body.upiId,
+   newinfo.google.merchantName=req.body.merchantName
   newinfo.save().then((doc)=>{
     console.log(doc)
     res.status(200).send({"success":true}).catch((err)=>{
