@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
-const organisation = mongoose.model('organisation',
-{   UID: {type:String,unique:true,required: true,index:true},
+const orgSchema = new mongoose.Schema({   
+    UID: {type:String,unique:true,required: true,index:true},
     orgName: {type:String,unique:true,required: true,index:true},
     orgId:{type:Number,unique:true,require:true,index:true},
     displayName: {type:String},
@@ -23,4 +23,5 @@ const organisation = mongoose.model('organisation',
         name:String
     }]
 },{ minimize: false })
+const organisation = mongoose.model('organisation',orgSchema)
 module.exports = organisation
