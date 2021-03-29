@@ -22,5 +22,5 @@ const organisation = mongoose.model('organisation',
         id:{type:String},
         name:String
     }]
-})
+},{ minimize: false })
 module.exports = organisation
