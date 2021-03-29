@@ -255,7 +255,7 @@ app.post('/orgname',async (req,res)=>{
 
 app.get('/orgfeed', async (req,res)=>{
   try {const ticket= jwt.verify(req.header('Authorization'),'sarvasva')   
-  const posts= await OrgFeed.find({orgId:ticket.orgprofile.orgId}).sort({created_at:-1})
+  const posts= await OrgFeed.find({orgId:ticket.orgprofile.orgId}).sort({created_at: -1})
   console.log(posts)
   res.status(200).send(posts)  }
   catch(err){
@@ -280,7 +280,8 @@ app.post('/orgfeed', async (req,res)=>{
     orgId: ticket.orgprofile.orgId,
     likes: req.body.likes,
     orgName: ticket.orgprofile.orgName,
-    liked: false
+    liked: false,
+    orgPhoto: ticket.orgprofile.photo
   })
   console.log(post)
   post.save().then(async (doc)=>{
