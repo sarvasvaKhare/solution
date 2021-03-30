@@ -254,9 +254,10 @@ app.post('/orgname',async (req,res)=>{
 })
 
 app.get('/orgfeed', async (req,res)=>{
-  try {const ticket= jwt.verify(req.header('Authorization'),'sarvasva')   
-  const posts= await OrgFeed.find({orgId:ticket.orgprofile.orgId}).sort({created_at: -1})
-  console.log(posts)
+  try {
+  const ID= req.query.orgId
+  console.log(ID)
+  const posts= await OrgFeed.find({orgId:ID}).sort({created_at: -1})
   res.status(200).send(posts)  }
   catch(err){
     console.log(err)
