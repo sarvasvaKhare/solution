@@ -264,6 +264,7 @@ app.get('/orgfeed', async (req,res)=>{
   }
   console.log(ID)
   const posts= await OrgFeed.find({orgId:ID}).sort({created_at: -1})
+  console.log(posts)
   res.status(200).send(posts)  }
   catch(err){
     console.log(err)
