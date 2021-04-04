@@ -70,6 +70,7 @@ const Coupon = require('./models/Coupons');
 const applicant = require('./models/applicants');
 // const paymentinfo=require('./models/paymentinfo');
 const Activity = require('./models/Activity');
+const Feedback = require('./models/Feedback');
 
 //app routes
 
@@ -819,7 +820,41 @@ res.status(200).send(result)} catch(err){
   res.status(400).send({"err":"Server error"})
 }
 })
+
+app.get('/feedback', async(req, res)=>{
+  res.status(200).send({"Status": "GET endpoint not implemented"});
+})
+
+app.post('/feedback', async(req, res)=>{
+  try{
+  const ticket = jwt.verify(req.header('Authorization'), 'sarvasva');
+  var user = '';
+  var isuser = false;
+  if(ticket.orgprofile){
+    user=ticket.orgprofile.orgId;
+  }else{
+    isuser = true;
+    user=ticket.doc.UID;
+  }
+  const feedback = new Feedback({
+    isUser: isuser,
+    id: user,
+    feedback: req.body.feedback
+  })
+  feedback.save().then((doc)=>{
+    res.status(200).send({"success":true})
+  }).catch((err)=>{
+    console.log(err)
+    res.status(400).send({"err":"Server Error"})
+  })
+}catch(err){
+  console.log(err)
+  res.status(400).send({"err":"Server Error"})
+}
+
+})
 // server up check
 app.listen(port, () => {
   console.log('Server is up on port ' + port)
 })
+
