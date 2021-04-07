@@ -320,7 +320,7 @@ app.post('/updatepro',async (req,res)=>{
       photo:req.body.photo,
       tagline:req.body.tagline
     })
-    res.status(200).send(file)
+    res.status(200).send({"success":true})
   }
   } catch(err){
     console.log(err)
