@@ -851,7 +851,16 @@ app.post('/feedback', async(req, res)=>{
   console.log(err)
   res.status(400).send({"err":"Server Error"})
 }
+})
 
+app.get("/leaderboard",async(req,res)=>{
+ try {
+   const data = await User.find({},'displayName photo UID points').sort({points: -1})
+  res.status(200).send(data)}
+  catch(err){
+    console.log(err)
+    res.status(400).send('server error')
+  }
 })
 // server up check
 app.listen(port, () => {
