@@ -624,7 +624,7 @@ app.get('/feed',async (req,res)=>{
     for(var i=0;i<newdata.following.length;i++){
       list.push(newdata.following[i].orgId)
     }
-    posts =  await OrgFeed.find({orgId: {$in:list}}).sort({created_at:-1})
+    posts =  await OrgFeed.find({orgId: {$in:list}}).sort({created_at: -1})
   }else{
     posts = await OrgFeed.find({}).sort({created_at:-1})
   }
@@ -852,7 +852,30 @@ app.post('/feedback', async(req, res)=>{
   console.log(err)
   res.status(400).send({"err":"Server Error"})
 }
+})
 
+app.get("/leaderboard",async(req,res)=>{
+ try {
+   const data = await User.find({},'displayName photo UID points').sort({points: -1}).limit(5)
+  res.status(200).send(data)}
+  catch(err){
+    console.log(err)
+    res.status(400).send('server error')
+  }
+})
+app.post('/updatePic',async(req,res)=>{
+  try { const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
+  const ID=ticket.orgprofile.orgId
+  if(ID){
+    const file = await organisation.updateOne({orgId:ID},{
+      photo:req.body.photo,
+    })
+    res.status(200).send({"success":true})
+  }
+  } catch(err){
+    console.log(err)
+    res.status(400).send({"err":"server error"})
+  }
 })
 // server up check
 app.listen(port, () => {
