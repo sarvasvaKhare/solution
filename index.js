@@ -631,6 +631,7 @@ app.get('/feed',async (req,res)=>{
   }
   for(var i=0;i<posts.length;i++){
     var n=posts[i].likes.length
+    posts[i].orgPhoto = await organisation.findOne({orgId:posts[i].orgId}).photo
     for(var j=0;j<n;j++){
         if(posts[i].likes[j].userId==ID){
           posts[i].liked=true
