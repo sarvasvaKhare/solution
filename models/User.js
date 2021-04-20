@@ -6,7 +6,7 @@ const User = mongoose.model('user',
     email:{type:String,unique:true},
     Level:{type:Number,required:true},
     following:[{
-        orgId:{type:String},
+        orgId:{type:Number},
         orgName:String
     }],
     donations:[{
