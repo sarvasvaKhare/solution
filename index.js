@@ -469,7 +469,7 @@ app.post('/follow', async (req,res)=>{
           res.status(200).send({"success":true})
         }).catch((err)=>{
           console.log(err)
-          res.status(400).send({"err":"activity not sent or already followed"})
+          res.status(200).send({"success":true})
         })
       }
     })
