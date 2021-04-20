@@ -639,6 +639,17 @@ app.get('/feed',async (req,res)=>{
   res.status(200).send(posts)
 }else{
   posts = await OrgFeed.find({}).sort({created_at:1})
+  for(var i=0;i<posts.length;i++){
+    var n=posts[i].likes.length
+    var org = await organisation.findOne({orgId:posts[i].orgId})
+    posts[i].orgPhoto = org.photo
+    for(var j=0;j<n;j++){
+        if(posts[i].likes[j].userId==ID){
+          posts[i].liked=true
+          break
+        }
+    }
+  }
   console.log(posts)
   res.status(200).send(posts)
 }
