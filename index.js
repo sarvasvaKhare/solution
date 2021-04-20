@@ -599,8 +599,8 @@ app.get('/search', async (req, res) => {
 
 app.get('/feed',async (req,res)=>{
   try {
+    if(req.header('Authorization')){
   const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
-  if(ticket.orgprofile!=undefined||ticket.doc!=undefined){
   var posts=[]
   var ID='';
 
