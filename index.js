@@ -388,13 +388,11 @@ app.post('/follow', async (req,res)=>{
   if(ticket.orgprofile==undefined){
     name=ticket.doc.displayName
     var conditions = {
-      "UID":ticket.doc.UID,
-      "following.orgId": {
-        $ne: req.body.orgId
-      }}
+      "UID":ticket.doc.UID
+    }
+
       var update = {
-        $addToSet: { following: { orgId: req.body.orgId, orgName: req.body.orgName } },
-        $addToSet: { followers: { id:ticket.doc.UID, name: ticket.doc.displayName}}
+        $addToSet: { following: { orgId: req.body.orgId, orgName: req.body.orgName }}
     }
     
     User.findOneAndUpdate(conditions,update,{new: true}).then((doc)=>{
@@ -402,10 +400,8 @@ app.post('/follow', async (req,res)=>{
         res.status(200).send({"msg":"already followed"})
       }else{
         var conditions = {
-          "orgId":req.body.orgId,
-          "followers.id": {
-            $ne: ticket.doc.UID
-          }}
+          "orgId":req.body.orgId
+        }
           var update = {
             $addToSet: { followers: { id:ticket.doc.UID, name: ticket.doc.displayName}}
         }
@@ -436,19 +432,15 @@ app.post('/follow', async (req,res)=>{
     }else{
     name=ticket.orgprofile.orgName
     var conditions = {
-      "orgId":ticket.orgprofile.orgId,
-      "following.orgId": {
-        $ne: req.body.orgId
-      }}
+      "orgId":ticket.orgprofile.orgId
+    }
     var update = {
         $addToSet: { following: { orgId: req.body.orgId, orgName: req.body.orgName } }
     }
     organisation.findOneAndUpdate(conditions,update,{new: true}).then((doc)=>{
       var conditions = {
-        "orgId":req.body.orgId,
-        "followers.id": {
-          $ne: ticket.orgprofile.orgId
-        }}
+        "orgId":req.body.orgId
+      }
         var update = {
           $addToSet: { followers: { id:ticket.orgprofile.orgId, name: ticket.orgprofile.orgName}}
       }
@@ -617,10 +609,13 @@ app.get('/feed',async (req,res)=>{
   }else{
     var list=[];
     ID=ticket.doc.UID
+    console.log(ID)
     var newdata= await User.findOne({UID:ID})
     if(newdata.following.length){
+      console.log(newdata.following.length)
     for(var i=0;i<newdata.following.length;i++){
       list.push(newdata.following[i].orgId)
+      console.log(newdata.following[i].orgId)
     }
     posts =  await OrgFeed.find({orgId: {$in:list}}).sort({created_at:1})
   }
