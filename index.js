@@ -598,8 +598,9 @@ app.get('/search', async (req, res) => {
 })
 
 app.get('/feed',async (req,res)=>{
-  try {if(req.header('Authorization')){
+  try {
   const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
+  if(ticket.orgprofile!=undefined||ticket.doc!=undefined){
   var posts=[]
   var ID='';
 
@@ -612,21 +613,16 @@ app.get('/feed',async (req,res)=>{
       list.push(newdata.following[i].orgId)
     }
     posts = await OrgFeed.find({orgId: {$in:list}}).sort({created_at:-1})
-  }else{
-    posts = await OrgFeed.find({}).sort({created_at:-1})
   }
   }else{
     var list=[];
     ID=ticket.doc.UID
-    
-    var newdata= await User.findOne({email:ticket.doc.email})
+    var newdata= await User.findOne({UID:ID})
     if(newdata.following.length){
     for(var i=0;i<newdata.following.length;i++){
       list.push(newdata.following[i].orgId)
     }
     posts =  await OrgFeed.find({orgId: {$in:list}}).sort({created_at: -1})
-  }else{
-    posts = await OrgFeed.find({}).sort({created_at:-1})
   }
   }
   for(var i=0;i<posts.length;i++){
