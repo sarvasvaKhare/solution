@@ -13,7 +13,7 @@ const orgSchema = new mongoose.Schema({
         profileUID:{type:String}
     }
     ],
-    orgId:{type:Number,index:true},
+    orgId:{type:String,index:true},
     likes:[{
         userId:{type:String},
         amount:{type:Number}
