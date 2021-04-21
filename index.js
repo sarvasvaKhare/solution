@@ -671,10 +671,10 @@ app.get('/profileinfo', async (req, res)=>{
   try{
   if(req.query.is_user=="false"){
     const file = await organisation.findOne({orgId:id})
-    res.query.status(200).send(file)
+    res.status(200).send(file)
   }else{
     const file = await User.findOne({UID:id})
-    req.query.status(200).send(file)
+    res.status(200).send(file)
   }
 }catch(err){
   console.log(err)
