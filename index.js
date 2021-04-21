@@ -678,7 +678,7 @@ app.get('/profileinfo', async (req, res)=>{
   }
 }catch(err){
   console.log(err)
-  res.status(400).send("err:Server Error")
+  res.status(400).send({"err":err})
 }
   
 })
