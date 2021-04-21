@@ -666,6 +666,23 @@ app.get('/profile', async (req,res)=>{
   }
 })
 
+app.get('/profileinfo', async (req, res)=>{
+  const id = req.query.id
+  try{
+  if(req.query.is_user=="false"){
+    const file = await organisation.findOne({orgId:id})
+    res.query.status(200).send(file)
+  }else{
+    const file = await User.findOne({UID:id})
+    req.query.status(200).send(file)
+  }
+}catch(err){
+  console.log(err)
+  res.status(400).send("err:Server Error")
+}
+  
+})
+
 app.get('/mods',async (req,res)=>{
   try {const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
   const ID=ticket.orgprofile.orgId
