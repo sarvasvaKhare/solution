@@ -265,6 +265,7 @@ app.get('/orgfeed', async (req,res)=>{
   }
   console.log(ID)
   const posts= await OrgFeed.find({orgId:ID}).sort({created_at: -1})
+  posts.reverse()
   console.log(posts)
   res.status(200).send(posts)  }
   catch(err){
@@ -631,6 +632,7 @@ app.get('/feed',async (req,res)=>{
         }
     }
   }
+  posts.reverse()
   res.status(200).send(posts)
 }else{
   posts = await OrgFeed.find({}).sort({created_at:1})
@@ -836,6 +838,7 @@ if(ticket.orgprofile){
     user=ticket.doc.UID
 }
 const result= await Activity.find({person2:user})
+result.reverse()
 res.status(200).send(result)} catch(err){
   console.log(err)
   res.status(400).send({"err":"Server error"})
