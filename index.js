@@ -605,7 +605,7 @@ app.get('/feed',async (req,res)=>{
     for(var i=0;i<newdata.following.length;i++){
       list.push(newdata.following[i].orgId)
     }
-    posts = await OrgFeed.find({orgId: {$in:list}}).sort({created_at:1})
+    posts = await OrgFeed.find({orgId: {$in:list}}).sort({created_at:-1})
   }
   }else{
     var list=[];
@@ -618,7 +618,7 @@ app.get('/feed',async (req,res)=>{
       list.push(newdata.following[i].orgId)
       console.log(newdata.following[i].orgId)
     }
-    posts =  await OrgFeed.find({orgId: {$in:list}}).sort({created_at:1})
+    posts =  await OrgFeed.find({orgId: {$in:list}}).sort({created_at:-1})
   }
   }
   for(var i=0;i<posts.length;i++){
@@ -635,7 +635,7 @@ app.get('/feed',async (req,res)=>{
   posts.reverse()
   res.status(200).send(posts)
 }else{
-  posts = await OrgFeed.find({}).sort({created_at:1})
+  posts = await OrgFeed.find({}).sort({created_at:-1})
   for(var i=0;i<posts.length;i++){
     var n=posts[i].likes.length
     var org = await organisation.findOne({orgId:posts[i].orgId})
@@ -647,6 +647,7 @@ app.get('/feed',async (req,res)=>{
         }
     }
   }
+  posts.reverse()
   console.log(posts)
   res.status(200).send(posts)
 }
