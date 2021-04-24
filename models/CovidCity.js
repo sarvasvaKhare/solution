@@ -12,5 +12,5 @@ const CovidCitySchema = mongoose.Schema({
     ]
 })
 
-const CovidCity = mongoose.model('CovidCity', CovidCitySchema, 'CovidCities')
+const CovidCity = mongoose.model('CovidCity', CovidCitySchema, 'Covid')
 module.exports = CovidCity
