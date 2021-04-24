@@ -71,8 +71,44 @@ const applicant = require('./models/applicants');
 // const paymentinfo=require('./models/paymentinfo');
 const Activity = require('./models/Activity');
 const Feedback = require('./models/Feedback');
+const CovidCity = require('./models/CovidCity');
 
 //app routes
+
+
+// covid endpoints
+app.get('/cities', async (req, res) => {
+  try{
+    var cities
+    if(req.query.search_query){
+      var search_string = req.query.search_query
+      var searchKey = new RegExp(search_string, 'i')
+      cities = await CovidCity.find({city:searchKey})
+    } else {
+      cities = await CovidCity.find({})
+    }
+  res.status(200).send(cities)
+  }catch(e){
+    console.log(e)
+    res.status(400).send({"err":"server error"})
+  }
+})
+
+app.get('city', async (req, res) => {
+  try{
+  var city
+  if(req.query.id){
+    city = await CovidCity.findOne({id:req.query.id})
+    res.status(200).send(city)
+  } else{
+    res.status(400).send({"err": "No such city"})
+  }} catch(e){
+    console.log(e)
+    res.status(400).send({"err":"server error"})
+  }
+})
+
+
 
 // organisation registration route
 app.post('/org', async (req, res) => { 
