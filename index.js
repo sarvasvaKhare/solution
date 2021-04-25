@@ -130,7 +130,7 @@ app.post('/org', async (req, res) => {
         photo: req.body.photo,
         tagline: req.body.tagline,
         google:{
-          upiId: req.body.upiId||"Ayush@upi",
+          upiId: req.body.upiId||"ayush231suman@okicici",
           merchantName: req.body.merchantName||"Ayush Suman"
         },
         posts: 0
