@@ -907,7 +907,16 @@ if(ticket.orgprofile){
 }else{
     user=ticket.doc.UID
 }
-const result= await Activity.find({person2:user})
+var result;
+if(req.query.limit){
+  if(req.query.start_after){
+    result= await Activity.find({person2:user}).limit(req.query.limit).skip(req.query.start_after).sort({created_at:-1})
+  }else{
+    result= await Activity.find({person2:user}).limit(req.query.limit).sort({created_at:-1})
+  }
+}else{
+  result= await Activity.find({person2:user})
+}
 result.reverse()
 res.status(200).send(result)} catch(err){
   console.log(err)
