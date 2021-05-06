@@ -636,10 +636,11 @@ app.get('/search', async (req, res) => {
 })
 
 app.get('/feed',async (req,res)=>{
+  var posts=[]
   try {
     if(req.header('Authorization')){
   const ticket= jwt.verify(req.header('Authorization'),'sarvasva')
-  var posts=[]
+  
   var ID='';
 
   if(ticket.orgprofile){
