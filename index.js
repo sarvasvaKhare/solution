@@ -130,10 +130,11 @@ app.post('/org', async (req, res) => {
         photo: req.body.photo,
         tagline: req.body.tagline,
         google:{
-          upiId: req.body.upiId||"ayush231suman@okicici",
-          merchantName: req.body.merchantName||"Ayush Suman"
+          upiId: req.body.upiId,
+          merchantName: req.body.merchantName
         },
-        posts: 0
+        posts: 0,
+        enabled: false
       })
       const mod= new moderator({
         UID: user.uid,                                        // create moderator profile as head of org
@@ -147,8 +148,7 @@ app.post('/org', async (req, res) => {
             if(!doc){
                 mod.save().then((file)=>{                   // if no duplicate save new org and mod profile
                   neworg.save().then((doc)=>{
-                    const token = jwt.sign({"modprofile":file,"orgprofile":doc}, 'sarvasva')  // create JWT token
-                    res.status(200).send({"jwt":token,"modprofile":file,"orgprofile":doc})
+                    res.status(200).send({"success":true})
                 }).catch((err)=>{
                   admin.auth().deleteUser(user.uid).then(() => {console.log({"msg":"Successfully deleted user"})  //if failure 
                   res.status(400).send({"err":"cant create new org"})}).catch((error) => {console.log(error);});
