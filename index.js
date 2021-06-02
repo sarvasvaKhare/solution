@@ -268,8 +268,12 @@ app.get('/login',async (req,res)=>{                         // org login route
       console.log(token)
       const doc = await moderator.findOne({UID:token.uid})                // search for orgprofile
         const file = await organisation.findOne({orgId:doc.orgId})        // and modprofile and create jwt to send
+        if(file.enabled){
         const ticket = jwt.sign({"modprofile":doc,"orgprofile":file}, 'sarvasva')
         res.status(200).send({"jwt":ticket,"modprofile":doc,"orgprofile":file})
+        }else{
+          res.status(400).send({"err":"Organisation currently under review"})
+        }
     } catch(err){
       console.log(err)
       res.status(403).send({"err":"server error"})
@@ -438,8 +442,8 @@ app.post('/follow', async (req,res)=>{
     }
 
       var update = {
-        $addToSet: { following: { orgId: req.body.orgId, orgName: req.body.orgName }}
-    }
+        $addToSet: {following: {orgId: req.body.orgId, orgName: req.body.orgName}}
+      }
     
     User.findOneAndUpdate(conditions,update,{new: true}).then((doc)=>{
       if(doc==null){

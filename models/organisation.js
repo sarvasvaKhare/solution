@@ -21,7 +21,11 @@ const orgSchema = new mongoose.Schema({
     followers:[{
         id:{type:String},
         name:String
-    }]
+    }],
+    enabled:{
+        type: Boolean,
+        default: false
+    }
 },{ minimize: false })
 const organisation = mongoose.model('organisation',orgSchema)
 module.exports = organisation
