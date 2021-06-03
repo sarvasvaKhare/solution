@@ -301,16 +301,13 @@ app.get('/orgfeed', async (req,res)=>{
   }
   var posts;
   console.log(ID)
-  if(req.query.limit){
-    if(req.query.start_after){
-      posts= await OrgFeed.find({orgId:ID}).limit(req.query.limit).skip(req.query.start_after).sort({created_at: -1})
-    }else{
-      posts= await OrgFeed.find({orgId:ID}).limit(req.query.limit).sort({created_at: -1})
-    }
+  if(req.query.page){
+    posts=  await OrgFeed.find({orgId:ID})
   }else{
-    posts= await OrgFeed.find({orgId:ID}).sort({created_at: -1})
+    posts= await OrgFeed.find({orgId:ID})
   }
-  posts.reverse()
+  posts.reverse().splice(req.query.page*1,
+    (req.query.page+1)*10)
   console.log(posts)
   res.status(200).send(posts)  }
   catch(err){
@@ -409,7 +406,8 @@ app.post('/like', async (req,res)=>{
       person2: doc.orgId,
       data: data,
       id: doc._id,
-      image: null
+      image: null,
+      activityId: ID + doc._id
     })
     newactive.save().then(()=>{
       res.status(200).send({"success":true,"id" : doc._id})
@@ -458,7 +456,8 @@ app.post('/follow', async (req,res)=>{
           person2: req.body.orgId,
           data: data,
           id: req.body.orgId,
-          image: null
+          image: null,
+          activityId: ticket.doc.UID + req.body.orgId
         })
         newactive.save().then((doc)=>{
           console.log(doc)
@@ -500,7 +499,8 @@ app.post('/follow', async (req,res)=>{
           person2: req.body.orgId,
           data: data,
           id: req.body.orgId,
-          image: null
+          image: null,
+          activityId: ticket.orgprofile.orgId + req.body.orgId
         })
         newactive.save().then((doc)=>{
           console.log(doc)
@@ -651,15 +651,6 @@ app.get('/feed',async (req,res)=>{
     for(var i=0;i<newdata.following.length;i++){
       list.push(newdata.following[i].orgId)
     }
-    if(req.query.limit){
-      if(req.query.start_after){
-        posts = await OrgFeed.find({orgId: {$in:list}}).limit(req.query.limit).skip(req.query.start_after).sort({created_at:-1})
-      }else{
-        posts = await OrgFeed.find({orgId: {$in:list}}).limit(req.query.limit).sort({created_at:-1})
-      }
-    }else{
-      posts = await OrgFeed.find({orgId: {$in:list}}).sort({created_at:-1})
-    }
   }
   }else{
     var list=[];
@@ -672,17 +663,9 @@ app.get('/feed',async (req,res)=>{
       list.push(newdata.following[i].orgId)
       console.log(newdata.following[i].orgId)
     }
-    if(req.query.limit){
-      if(req.query.start_after){
-        posts = await OrgFeed.find({orgId: {$in:list}}).limit(req.query.limit).skip(req.query.start_after).sort({created_at:-1})
-      }else{
-        posts = await OrgFeed.find({orgId: {$in:list}}).limit(req.query.limit).sort({created_at:-1})
-      }
-    }else{
-      posts = await OrgFeed.find({orgId: {$in:list}}).sort({created_at:-1})
-    }
   }
-  }
+}
+  posts = await OrgFeed.find({orgId: {$in:list}})
   for(var i=0;i<posts.length;i++){
     var n=posts[i].likes.length
     var org = await organisation.findOne({orgId:posts[i].orgId})
@@ -695,17 +678,10 @@ app.get('/feed',async (req,res)=>{
     }
   }
   posts.reverse()
+  posts.slice(req.query.page*1,(req.query.page+1)*10)
   res.status(200).send(posts)
 }else{
-  if(req.query.limit){
-    if(req.query.start_after){
-      posts = await OrgFeed.find({orgId: {$in:list}}).limit(req.query.limit).skip(req.query.start_after).sort({created_at:-1})
-    }else{
-      posts = await OrgFeed.find({orgId: {$in:list}}).limit(req.query.limit).sort({created_at:-1})
-    }
-  }else{
-    posts = await OrgFeed.find({orgId: {$in:list}}).sort({created_at:-1})
-  }
+      posts = await OrgFeed.find({orgId: {$in:list}})
   for(var i=0;i<posts.length;i++){
     var n=posts[i].likes.length
     var org = await organisation.findOne({orgId:posts[i].orgId})
@@ -718,6 +694,7 @@ app.get('/feed',async (req,res)=>{
     }
   }
   posts.reverse()
+  posts.slice(req.query.page*1,(req.query.page+1)*10)
   console.log(posts)
   res.status(200).send(posts)
 }
