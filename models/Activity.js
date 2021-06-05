@@ -5,8 +5,8 @@ const activitySchema = new mongoose.Schema({
     id: String,
     data: String,
     image: String,
+    activityId: {type: String,index: true}
 })
-activitySchema.index({ person1: 1, id : 1}, { "unique": false });
 const Activity = mongoose.model('activity',activitySchema)
 Activity.createIndexes({ person1: 1, id : 1})
 module.exports = Activity
