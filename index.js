@@ -350,8 +350,7 @@ app.post('/orgfeed', async (req,res)=>{
     orgId: ticket.orgprofile.orgId,
     likes: req.body.likes,
     orgName: ticket.orgprofile.orgName,
-    liked: false,
-    orgPhoto: ticket.orgprofile.photo
+    liked: false
   })
   console.log(post)
   post.save().then(async (doc)=>{
