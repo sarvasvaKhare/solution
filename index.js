@@ -329,10 +329,10 @@ app.get('/orgfeed', async (req, res) => {
         var selfID;
         var posts;
         if (req.header('Authorization')) {
+            const ticket = jwt.verify(req.header('Authorization'), 'sarvasva')
             if (ticket.orgprofile == undefined) {
                 selfID = ticket.doc.UID
             }else{
-                const ticket = jwt.verify(req.header('Authorization'), 'sarvasva')
                 selfID = ticket.orgprofile.orgId
             }
         }
