@@ -296,7 +296,7 @@ app.post('/orgname',async (req,res)=>{
 
 app.get('/orgfeed', async (req,res)=>{
   try {
-  var ID='';
+  var ID;
   var selfID;
   if(req.header('Authorization')){
     const ticket=jwt.verify(req.header('Authorization'),'sarvasva')
@@ -354,7 +354,8 @@ app.get('/orgfeed', async (req,res)=>{
     (req.query.page+1)*10)
 
   console.log(posts)
-  res.status(200).send(posts)  }
+  res.status(200).send(posts)  
+}
   catch(err){
     console.log(err)
     res.status(400).send({"err":"server error"})
