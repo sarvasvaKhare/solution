@@ -329,8 +329,12 @@ app.get('/orgfeed', async (req, res) => {
         var selfID;
         var posts;
         if (req.header('Authorization')) {
-            const ticket = jwt.verify(req.header('Authorization'), 'sarvasva')
-            selfID = ticket.orgprofile.orgId
+            if (ticket.orgprofile == undefined) {
+                selfID = ticket.doc.UID
+            }else{
+                const ticket = jwt.verify(req.header('Authorization'), 'sarvasva')
+                selfID = ticket.orgprofile.orgId
+            }
         }
         ID = req.query.orgId
         if (ID) {
@@ -344,12 +348,14 @@ app.get('/orgfeed', async (req, res) => {
                 var n = posts[i].likes.length
                 var org = await organisation.findOne({orgId: posts[i].orgId})
                 posts[i].orgPhoto = org.photo
+                if(selfID){
                 for (var j = 0; j < n; j++) {
-                    if (posts[i].likes[j].userId === selfID) {
+                    if (posts[i].likes[j].userId == selfID) {
                         posts[i].liked = true
                         break
                     }
                 }
+            }
             }
         } else {
             if (selfID) {
@@ -364,7 +370,7 @@ app.get('/orgfeed', async (req, res) => {
                     var org = await organisation.findOne({orgId: posts[i].orgId})
                     posts[i].orgPhoto = org.photo
                     for (var j = 0; j < n; j++) {
-                        if (posts[i].likes[j].userId === selfID) {
+                        if (posts[i].likes[j].userId == selfID) {
                             posts[i].liked = true
                             break
                         }
