@@ -19,6 +19,7 @@ const orgSchema = new mongoose.Schema({
         amount:{type:Number}
     }],
     orgName: String,
+    orgPhoto:String,
     liked: {type:Boolean},
 },{timestamps:true})
 const OrgFeed = mongoose.model('OrgFeed',orgSchema,'OrgFeed')
