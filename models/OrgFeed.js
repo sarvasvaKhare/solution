@@ -20,7 +20,6 @@ const orgSchema = new mongoose.Schema({
     }],
     orgName: String,
     liked: {type:Boolean},
-    orgPhoto: String
 },{timestamps:true})
 const OrgFeed = mongoose.model('OrgFeed',orgSchema,'OrgFeed')
 module.exports = OrgFeed

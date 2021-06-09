@@ -297,16 +297,17 @@ app.post('/orgname',async (req,res)=>{
 app.get('/orgfeed', async (req,res)=>{
   try {
   var ID='';
+  var selfID;
   if(req.header('Authorization')){
     const ticket=jwt.verify(req.header('Authorization'),'sarvasva')
-    ID=ticket.orgprofile.orgId
-  }else{
-    ID= req.query.orgId
+    selfID=ticket.orgprofile.orgId
   }
+  ID = req.query.orgId
+  if(ID){
   var posts;
   console.log(ID)
   if(req.query.page){
-    posts=  await OrgFeed.find({orgId:ID})
+    posts= await OrgFeed.find({orgId:ID})
   }else{
     posts= await OrgFeed.find({orgId:ID})
   }
@@ -316,12 +317,38 @@ app.get('/orgfeed', async (req,res)=>{
     var org = await organisation.findOne({orgId:posts[i].orgId})
     posts[i].orgPhoto = org.photo
     for(var j=0;j<n;j++){
-        if(posts[i].likes[j].userId==ID){
+        if(posts[i].likes[j].userId==selfID){
           posts[i].liked=true
           break
         }
     }
   }
+  }else{
+    if(selfID){
+    var posts;
+    console.log(ID)
+    if(req.query.page){
+      posts= await OrgFeed.find({orgId:selfID})
+    }else{
+      posts= await OrgFeed.find({orgId:selfID})
+    }
+
+    for(var i=0;i<posts.length;i++){
+      var n=posts[i].likes.length
+      var org = await organisation.findOne({orgId:posts[i].orgId})
+      posts[i].orgPhoto = org.photo
+      for(var j=0;j<n;j++){
+          if(posts[i].likes[j].userId==selfID){
+            posts[i].liked=true
+            break
+          }
+      }
+    }
+  }else{
+    res.status(400).send({"err":"Send either token or orgId"})
+        return
+      }
+    }
   
   posts.reverse().splice(req.query.page*1,
     (req.query.page+1)*10)
@@ -330,6 +357,7 @@ app.get('/orgfeed', async (req,res)=>{
   res.status(200).send(posts)  }
   catch(err){
     console.log(err)
+    res.status(400).send({"err":"server error"})
   }
 })
 
