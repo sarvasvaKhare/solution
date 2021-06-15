@@ -356,7 +356,7 @@ app.get('/orgfeed', async (req, res) => {
             }
             }
         } else {
-            if (selfID) {
+            if (selfID!=undefined) {
                 console.log(ID)
                 if (req.query.page) {
                     posts = await OrgFeed.find({orgId: selfID})
