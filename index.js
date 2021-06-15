@@ -147,7 +147,7 @@ app.post('/org', async (req, res) => {
                                         var mailOptions = {
                                             from: 'donutorgapp@gmail.com',
                                             to: user.email,
-                                            subject: 'Registration process',
+                                            subject: 'Welcome to donut',
                                             text: `Thank you for applying to Donut. 
 
                                             Donut promises to be the one stop platform for all the social welfare activities. The app and the team is evolving everyday. With a vision to help India achieve the 17 UN Sustainable Development Goals, we are looking forward to Organisations like yours to help us bring this huge impact.
