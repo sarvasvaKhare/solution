@@ -17,25 +17,6 @@ admin.initializeApp({
     databaseURL: "https://socialgoal-e4d3d-default-rtdb.firebaseio.com"
 });
 
-// swagger docs
-const swaggerJsDocs = require('swagger-jsdoc')
-const swaggerUi = require('swagger-ui-express')
-const swaggerOptions = {
-    swaggerDefinition: {
-        info: {
-            title: 'my memes api',
-            description: 'memes fetch',
-            contact: {
-                name: 'sarvasva khare'
-            },
-            servers: ['http://localhost:8081']
-        }
-    },
-    apis: ['index.js']
-}
-const swaggerDocs = swaggerJsDocs(swaggerOptions);
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
-
 //setting up cors for inter-domain requests
 var cors = require('cors')
 app.use(cors())
@@ -78,6 +59,15 @@ const Activity = require('./models/Activity');
 const Feedback = require('./models/Feedback');
 const CovidCity = require('./models/CovidCity');
 
+//mail settings
+const nodemailer = require('nodemailer');
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: 'donutorgapp@gmail.com',
+      pass: 'QwertyuioP123'
+    }
+  });
 //app routes
 
 
@@ -154,8 +144,33 @@ app.post('/org', async (req, res) => {
                             if (!doc) {
                                 mod.save().then((file) => {                   // if no duplicate save new org and mod profile
                                     neworg.save().then((doc) => {
-                                        res.status(200).send({"success": true})
-                                    }).catch((err) => {
+                                        var mailOptions = {
+                                            from: 'donutorgapp@gmail.com',
+                                            to: user.email,
+                                            subject: 'Welcome to donut',
+                                            text: `Thank you for applying to Donut. 
+
+                                            Donut promises to be the one stop platform for all the social welfare activities. The app and the team is evolving everyday. With a vision to help India achieve the 17 UN Sustainable Development Goals, we are looking forward to Organisations like yours to help us bring this huge impact.
+                                            
+                                            
+                                            Here is the next step for your onboarding to the Donut platform. Fill this form - https://forms.gle/gXAKjvBb3YQzsb2o7
+                                            
+                                            Reply to this email if you have any queries.
+                                            
+                                            Cheers
+                                            Team Donut`
+                                          }
+                                          transporter.sendMail(mailOptions, function(error, info){
+                                              if(error){
+                                                  console.log(error)
+                                              }else{
+                                                console.log(info.response)
+                                                res.status(200).send()
+                                              }
+                                          }
+                                          ) 
+                                        }
+                                          ).catch((err) => {
                                         admin.auth().deleteUser(user.uid).then(() => {
                                             console.log({"msg": "Successfully deleted user"})  //if failure
                                             res.status(400).send({"err": "cant create new org"})
