@@ -706,6 +706,13 @@ app.delete('/orgfeed', async (req, res) => {
     }
 })
 
+app.get('version', async(req, res)=>{
+    res.status(200).send({
+        'version':'0.0.2',
+        'mandatoryUpdate':true
+    })
+})
+
 // GET endpoint to return search results
 app.get('/search', async (req, res) => {
     try {
@@ -945,8 +952,11 @@ app.post('/paymentinfo', async (req, res) => {
         const ticket = jwt.verify(req.header('Authorization'), 'sarvasva')
         if (ticket.orgprofile) {
             const newinfo = await organisation.findOne({orgId: ticket.orgprofile.orgId})
-            newinfo.google.upiId = req.body.upiId,
-                newinfo.google.merchantName = req.body.merchantName
+            newinfo.donation.upiId = req.body.upiId,
+            newinfo.donation.merchantName = req.body.merchantName
+            newinfo.donation.donationLink = req.body.donationLink
+            newinfo.donation.amount = req.body.amount
+            newinfo.donation.showAmount = req.body.showAmount
             newinfo.save().then((doc) => {
                 res.status(200).send({"success": true})
             }).catch((err) => {
@@ -964,7 +974,7 @@ app.post('/paymentinfo', async (req, res) => {
 
 app.get('/paymentinfo', async (req, res) => {
     try {
-        let data = await organisation.findOne({orgId: req.query.orgId}, 'orgId google');
+        let data = await organisation.findOne({orgId: req.query.orgId}, 'orgId donation');
         res.status(200).send(data)
     } catch (err) {
         console.log(err);

@@ -10,9 +10,15 @@ const orgSchema = new mongoose.Schema({
     photo:String,
     tagline:String,
     posts: Number,
-    google:{
+    donation:{
         upiId: String,
-        merchantName: String
+        merchantName: String,
+        donationLink:String,
+        amount:Number,
+        showAmount:{
+            type:Boolean,
+            default: true
+        }
     },
     following:[{
         orgId:{type:String},
