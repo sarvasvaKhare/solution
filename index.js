@@ -904,7 +904,8 @@ app.post('/application', async (req, res) => {
                 email: ticket.doc.email,
                 Reason: req.body.Reason,
                 orgId: req.body.orgId,
-                ModEmail: req.body.ModEmail
+                profilePic: ticket.doc.photo,
+                name: ticket.doc.displayName
             })
             newapplicant.save().then(() => {
                 res.status(200).send({"success": true})
