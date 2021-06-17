@@ -904,7 +904,7 @@ app.post('/application', async (req, res) => {
                 email: ticket.doc.email,
                 Reason: req.body.Reason,
                 orgId: req.body.orgId,
-                UID:ticket.doc.UID,
+                UID: ticket.doc.UID,
                 profilePic: ticket.doc.photo,
                 name: ticket.doc.displayName
             })
