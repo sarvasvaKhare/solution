@@ -1000,13 +1000,21 @@ app.get('/paymentinfo', async (req, res) => {
 })
 
 app.get('/activity', async (req, res) => {
-    try {
-        const ticket = jwt.verify(req.header('Authorization'), 'sarvasva');
+    var ticket
+    try{
+        ticket = jwt.verify(req.header('Authorization'), 'sarvasva');
+    }catch(e){
+        res.status(200).send([])
+        return
+    }
+    try{
         var user = ' '
         if (ticket.orgprofile) {
             user = ticket.orgprofile.orgId
-        } else {
+        } else if(ticket.doc){
             user = ticket.doc.UID
+        }else{
+            res.status(200).send([])
         }
         var result;
         if (req.query.limit) {
