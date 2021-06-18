@@ -926,15 +926,15 @@ app.post('/application', async (req, res) => {
 app.get('/application', async (req, res) => {
     try {
         const ticket = jwt.verify(req.header('Authorization'), 'sarvasva')
+        var applicants
         if(ticket.orgprofile){
             console.log(ticket.orgprofile.orgId)
-            const applicants = await applicant.find({orgId: ticket.orgprofile.orgId}).sort({created_at: -1})
-            applicants.reverse()
-            res.status(200).send(applicants)
+            applicants = await applicant.find({orgId: ticket.orgprofile.orgId}).sort({created_at: -1})
         }else{
-            const applicants = await applicant.find({orgId: req.query.orgId, UID: ticket.doc.UID})
-            res.status(200).send(applicants)
+            applicants = await applicant.find({orgId: req.query.orgId, UID: ticket.doc.UID}).sort({created_at: -1})
         }
+        applicants.reverse()
+        res.status(200).send(applicants)
     } catch (err) {
         console.log(err)
         res.status(400).send({"err": "Server error"})
