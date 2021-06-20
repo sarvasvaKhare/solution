@@ -108,15 +108,15 @@ app.get('city', async (req, res) => {
 // organisation registration route
 app.post('/org', async (req, res) => {
     try {
-        await admin.auth().createUser({                  //verify ID-TOKEN from Firebase
+        await admin.auth().createUser({         // verify ID-TOKEN from Firebase
             email: req.body.email,
             emailverified: false,
             password: req.body.password
         }).then((user) => {
             console.log(user)
-            organisation.estimatedDocumentCount().then((num) => {     //create
-                const neworg = new organisation({                        // new Org
-                    UID: user.uid,                                        // in mongodb
+            organisation.estimatedDocumentCount().then((num) => {     // create
+                const neworg = new organisation({                     // new Org
+                    UID: user.uid,                                    // in mongodb
                     orgName: req.body.orgName,
                     displayName: req.body.displayName,
                     orgId: num || 0,
@@ -133,57 +133,52 @@ app.post('/org', async (req, res) => {
                     enabled: false
                 })
                 const mod = new moderator({
-                    UID: user.uid,                                        // create moderator profile as head of org
+                    UID: user.uid,                                 // create moderator profile as head of org
                     email: user.email,
                     orgId: num || 0,
                     access: 'HEAD'
                 })
-                organisation.findOne(neworg).then((doc) => {             // search for duplicate org
+                organisation.findOne(neworg).then((doc) => {      // search for duplicate org
                     if (!doc) {
-                        moderator.findOne(mod).then((doc) => {               // search for dupilacte moderator
+                        moderator.findOne(mod).then((doc) => {    // search for dupilacte moderator
                             if (!doc) {
-                                mod.save().then((file) => {                   // if no duplicate save new org and mod profile
+                                mod.save().then((file) => {       // if no duplicate save new org and mod profile
                                     neworg.save().then((doc) => {
                                         var mailOptions = {
                                             from: 'donutorgapp@gmail.com',
                                             to: user.email,
-                                            subject: 'Welcome to donut',
+                                            subject: 'Welcome to Donut',
                                             text: `Thank you for applying to Donut. 
-
-                                            Donut promises to be the one stop platform for all the social welfare activities. The app and the team is evolving everyday. With a vision to help India achieve the 17 UN Sustainable Development Goals, we are looking forward to Organisations like yours to help us bring this huge impact.
+Donut promises to be the one stop platform for all the social welfare activities. The app and the team is evolving everyday. With a vision to help India achieve the 17 UN Sustainable Development Goals, we are looking forward to Organisations like yours to help us bring this huge impact.
+                                                                                        
+Here is the next step for your onboarding to the Donut platform. Fill this form - https://forms.gle/gXAKjvBb3YQzsb2o7
                                             
+Reply to this email if you have any queries.
                                             
-                                            Here is the next step for your onboarding to the Donut platform. Fill this form - https://forms.gle/gXAKjvBb3YQzsb2o7
-                                            
-                                            Reply to this email if you have any queries.
-                                            
-                                            Cheers
-                                            Team Donut`
-                                          }
+Cheers
+Team Donut`}
                                           transporter.sendMail(mailOptions, function(error, info){
                                               if(error){
                                                   console.log(error)
                                               }else{
                                                 console.log(info.response)
-                                                res.status(200).send()
+                                                res.status(200).send({"success":true})
                                               }
-                                          }
-                                          ) 
+                                          }) 
                                         }
                                           ).catch((err) => {
                                         admin.auth().deleteUser(user.uid).then(() => {
-                                            console.log({"msg": "Successfully deleted user"})  //if failure
+                                            console.log({"msg": "Successfully deleted user"})  // if failure
                                             res.status(400).send({"err": "cant create new org"})
                                         }).catch((error) => {
                                             console.log(error);
                                         });
                                     })
-                                }).catch((err) => {                                                                               //delete from
+                                }).catch((err) => {                                            // delete from
                                     admin.auth().deleteUser(user.uid).then(() => {
-                                        console.log({"msg": "Successfully deleted user"}) // firebase
+                                        console.log({"msg": "Successfully deleted user"})      // firebase
                                         res.status(400).send({"err": "cant create new org"})
-                                    })
-                                        .catch((error) => {
+                                    }).catch((error) => {
                                             console.log(error);
                                         });
                                 })
@@ -200,8 +195,7 @@ app.post('/org', async (req, res) => {
                             admin.auth().deleteUser(user.uid).then(() => {
                                 console.log({"msg": "Successfully deleted user"})
                                 res.status(400).send({"err": "cant create new org"})
-                            })
-                                .catch((error) => {
+                            }).catch((error) => {
                                     console.log(error);
                                 });
                         })
@@ -218,8 +212,7 @@ app.post('/org', async (req, res) => {
                     admin.auth().deleteUser(user.uid).then(() => {
                         console.log('Successfully deleted user')
                         res.status(400).send(err)
-                    })
-                        .catch((error) => {
+                    }).catch((error) => {
                             console.log(error);
                         });
                 })
@@ -239,18 +232,18 @@ app.post('/org', async (req, res) => {
 
 app.post('/mod', async (req, res) => {
     try {
-        const token = jwt.verify(req.header('Authorization'), 'sarvasva')  // verify access of the person adding mod if correct
-        console.log(token)
-        var password = generator.generate({                    //genrate random password
+        const token = jwt.verify(req.header('Authorization'), 'sarvasva')  
+        console.log(token)                                     // verify access of the person adding mod if correct
+        var password = generator.generate({                    // generate random password
             length: 8,
             numbers: true
         })
         await admin.auth().createUser({                       // create new user with email provided
-            email: req.body.email,                              // in firebase
+            email: req.body.email,                            // in firebase
             emailverified: false,
             password: password
         }).then((user) => {
-            const mod = new moderator({                        // add new moderator in moderator table in mongodb
+            const mod = new moderator({                       // add new moderator in moderator table in mongodb
                 UID: user.uid,
                 email: user.email,
                 orgId: token.orgprofile.orgId,

@@ -5,7 +5,7 @@ const applicantSchema = new mongoose.Schema({
     Reason: String,
     profilePic:String,
     UID:String,
-    name:String
-})
+    name:String,
+}, { timestamps: true })
 const applicant = mongoose.model('applicant',applicantSchema)
 module.exports = applicant
