@@ -106,8 +106,21 @@ app.get('city', async (req, res) => {
 
 app.get('/explore', async (req, res) => {
     try{
-        const explore = await organisation.find({showOnExplore:true})
-        res.status(200).send(explore)
+        var ID = '';
+        var Name = '';
+        if (req.header('Authorization')){
+            const ticket = jwt.verify(req.header('Authorization'), 'sarvasva')
+        
+            if (ticket.orgprofile) {
+                ID = ticket.orgprofile.orgId
+                Name = ticket.orgprofile.orgName
+            }else{
+                ID = ticket.doc.UID
+                Name = ticket.doc.displayName
+            }
+        }
+        const explore = await organisation.find({showOnExplore:true, followers : {$nin: {id:ID,name:Name}}})
+        res.status(200).send(explore)    
     }catch(e){
         console.log(e)
         res.status(400).send({"err":"servor error"})
