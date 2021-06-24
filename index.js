@@ -104,7 +104,7 @@ app.get('city', async (req, res) => {
     }
 })
 
-app.get('explore', async (req, res) => {
+app.get('/explore', async (req, res) => {
     try{
         const explore = await organisation.find({showOnExplore:true})
         res.status(200).send(explore)
