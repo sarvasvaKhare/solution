@@ -1077,7 +1077,8 @@ app.post('/feedback', async (req, res) => {
 
 app.get("/leaderboard", async (req, res) => {
     try {
-        const data = await User.find({}, 'displayName photo UID points').sort({points: -1}).limit(5)
+        const data = await User.find({}, 'displayName photo UID points').where(points).gt(0).sort({points: -1}).limit(5)
+        
         res.status(200).send(data)
     } catch (err) {
         console.log(err)
