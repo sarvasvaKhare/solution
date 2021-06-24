@@ -1082,7 +1082,7 @@ app.get("/leaderboard", async (req, res) => {
         res.status(200).send(data)
     } catch (err) {
         console.log(err)
-        res.status(400).send('server error')
+        res.status(400).send([])
     }
 })
 app.post('/updatePic', async (req, res) => {
