@@ -10,6 +10,14 @@ const orgSchema = new mongoose.Schema({
     photo:String,
     tagline:String,
     posts: Number,
+    verified: {
+        type: Boolean,
+        default: false
+    },
+    showOnExplore:{
+        type:Boolean,
+        default:false
+    },
     donation:{
         upiId: String,
         merchantName: String,

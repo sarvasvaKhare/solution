@@ -104,6 +104,16 @@ app.get('city', async (req, res) => {
     }
 })
 
+app.get('explore', async (req, res) => {
+    try{
+        const explore = await organisation.find({showOnExplore:true})
+        res.status(200).send(explore)
+    }catch(e){
+        console.log(e)
+        res.status(400).send({"err":"servor error"})
+    }
+})
+
 
 // organisation registration route
 app.post('/org', async (req, res) => {
