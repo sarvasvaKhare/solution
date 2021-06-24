@@ -110,7 +110,6 @@ app.get('/explore', async (req, res) => {
         var Name = '';
         if (req.header('Authorization')){
             const ticket = jwt.verify(req.header('Authorization'), 'sarvasva')
-        
             if (ticket.orgprofile) {
                 ID = ticket.orgprofile.orgId
                 Name = ticket.orgprofile.orgName
