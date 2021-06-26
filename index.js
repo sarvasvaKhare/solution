@@ -119,6 +119,7 @@ app.get('/explore', async (req, res) => {
             }
         }
         const explore = await organisation.find({showOnExplore:true, followers : {$nin: {id:ID,name:Name}}})
+        console.log(explore)
         res.status(200).send(explore)    
     }catch(e){
         console.log(e)
